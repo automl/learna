@@ -1,0 +1,22 @@
+name: learna
+channels:
+  - bioconda
+dependencies:
+  - python=3.6
+  - viennarna=2.4.8
+  - numpy
+  - pandas=0.22
+  - requests
+  - pytest
+  - pylint
+  - pip:
+    - tensorflow==1.4.0
+    - pynisher
+    - scikits.bootstrap
+    - hpbandster
+    - tqdm
+    - black
+    - Distance
+    - tensorforce==0.3.3
+    - dataclasses
+    - hpbandster
