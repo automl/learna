@@ -136,7 +136,7 @@ Options:
 * `data_dir`: Use `data/`
 * `results_dir`: Any output directory of your choice
 * `experiment_group`: Any name you would like to provide (defines the name of the output directory inside `results_dir`
-* `method`: One of `final_conf_10min`, `final_conf_30min`, `final_conf_transfer`
+* `method`: One of `final_conf_10min`, `final_conf_30min`, `Meta_LEARNA`
 * `dataset`: One of `eterna`, `rfam_taneda`, `rfam_learn/test`
 * `task_id`: An id of any target structure of the corresponding dataset
 
@@ -150,7 +150,7 @@ This creates a `results/<experiment_group>/<dataset>/<execution_script>/run-0` d
 
 &nbsp;  
 
-#### Note: The only difference between *Meta-LEARNA* and *Meta-LEARNA-Adapt* is an additional option called `--stop-learning` that needs to be removed in the `exectution_script` for transferring agents `final_config_transfer.sh` to run *Meta-LEARNA-Adapt* instead of *Meta-LEARNA*. 
+#### Note: The only difference between *Meta-LEARNA* and *Meta-LEARNA-Adapt* is an additional option called `--stop-learning` that needs to be removed in the `exectution_script` for *Meta-LEARNA* `Meta_LEARNA.sh` to run *Meta-LEARNA-Adapt* instead of *Meta-LEARNA*. 
 
 &nbsp;  
 
