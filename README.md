@@ -16,7 +16,7 @@ A meta-learning approach for RNA Design utilizing a single policy, pre-trained a
 #### *Meta-LEARNA-Adapt*:
 A deep reinforcement learning approach combining the strategies of *LEARNA* and *Meta-LEARNA* by warmstarting *LEARNA* using the policy of *Meta-LEARNA* for initialization of the weights and continuing learning the policy on new RNA Design problems.
 
-We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a.html) used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
+We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a/falkner18a.pdf) used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
 
 All source code can be found in the `src` directory. The code of *LEARNA*, *Meta-LEARNA* and *Meta-LEARNA-Adapt* can be found in `src/learna/`. All code needed to run BOHB is accessible at `src/optimization/`.
 
@@ -26,7 +26,7 @@ All source code can be found in the `src` directory. The code of *LEARNA*, *Meta
 
 # Installation
 
-#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. If you do not want to use this pipeline, feel free to install all the following requirements on your own before running the provided scripts.
+#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. If you do not want to use this pipeline, make sure your system satisfies the following requirements before running the provided scripts.
 
 &nbsp;   
 
@@ -61,7 +61,7 @@ We tested the installation on the following operating systems:
 
 ## Datasets
 
-To download and build the datasets we report results on in our publication, namely the Eterna100 [(Anderson-Lee et al., 2016)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/) dataset, the Rfam-Taneda [(Taneda, 2011)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/) dataset and our three proposed datasets (Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test), run the following command after installation.
+To download and build the datasets we report results on in our publication, namely the Eterna100 [[Anderson-Lee et al., 2016]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/pdf/nihms747287.pdf) dataset, the Rfam-Taneda [[Taneda, 2011]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/pdf/aabc-4-001.pdf) dataset and our three proposed datasets, Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test, run the following command after installation of all requirements.
 
 ```
 make data
@@ -94,7 +94,7 @@ make show-help
 
 ### Single Decision Process via `make`
 
-To limit computational costs we provide commands to reproduce our results for single target structures of any of the benchmarks instead of providing a pipeline directly involving entire datasets. However, we also provide scripts for running our code on an entire dataset using a `MOAB` cluster. The following commands will run one of the finally selected configurations on a single target structure
+To limit computational costs we provide commands to reproduce our results for single target structures of any of the benchmarks instead of providing a pipeline directly involving entire datasets. The following commands will run one of the finally selected configurations on a single target structure
 
 #### *LEARNA*
 ```
@@ -109,18 +109,17 @@ make reproduce-Meta-LEARNA-<benchmark>-<id>
 make reproduce-Meta-LEARNA-Adapt-<benchmark>-<id>
 ```
 `<benchmark>` could be any of the three benchmarks `Eterna`, `Rfam-Taneda`, `Rfam-Learn-Test`.
-`<id>` corresponds to one of the target structures as reported in our publication. All target structures of all datasets in the `data/` directory are saved in single files each having all the same format: `<id>.rna`.
+`<id>` corresponds to one of the target structures as reported in our publication.
 
 &nbsp;  
 
 ### Timed Execution
-To have a standardized timing for all algorithms without using internal timeouts, we decided to limit the runtime using `pynisher`. We provide our script for timed execution and our execution scripts for running our approaches
+To have a standardized timing for all algorithms without using internal timeouts, we decided to limit the runtime using [pynisher](https://github.com/sfalkner/pynisher). We provide our script for timed execution and our execution scripts for running our approaches. 
 The following scripts are available in the `utils/` directory:
 
-* `timed_execution.py` Script for timing control using [pynisher](https://github.com/sfalkner/pynisher)
-* `execution_scripts/final_config_{10min, 30min, transfer}.sh` The actual scripts to be executed for reproducing results
+* `timed_execution.py`: Script for timing control using `pynisher`
+* `execution_scripts/final_config_{10min, 30min, Meta-LEARNA}.sh`: Scripts containing the final configurations
 
-#### Single Decision Process
 All `execution_scripts` can be run locally using the `timed_execution` script. To do so run the following command after activation of the `learna` environment from the project's root directory
 ```
 python utils/timed_execution.py \
