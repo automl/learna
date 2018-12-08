@@ -1,0 +1,14 @@
+# Python
+__pycache__
+__init__.pyc
+**/*.pyc
+
+# pytest
+.pytest_cache/
+.cache/
+
+# thirdparty
+thirdparty/miniconda/miniconda
+
+# datasets
+*.rna
