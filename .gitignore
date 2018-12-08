@@ -12,3 +12,5 @@ thirdparty/miniconda/miniconda
 
 # datasets
 *.rna
+data/eterna/interim/*.txt
+data/eterna/raw/*.txt
