@@ -236,8 +236,6 @@ class L2DesignRNAWorker(Worker):
             )
         )
 
-        # config_space.add_hyperparameter(CS.UniformIntegerHyperparameter('optimization_steps', lower=8, upper=128, log=True, default_value=10))
-
         # parameters for the architecture
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(

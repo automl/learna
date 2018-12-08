@@ -167,16 +167,11 @@ class DesignRNAWorker(Worker):
             )
         )
 
-        # config_space.add_hyperparameter(CS.UniformIntegerHyperparameter('state_radius', lower=1, upper=32, log=True, default_value=32))
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "state_radius_relative", lower=0, upper=1, default_value=0
             )
         )
-
-        # config_space.add_hyperparameter(CS.UniformIntegerHyperparameter('optimization_steps', lower=8, upper=128, log=True, default_value=10))
-
-        # config_space.add_hyperparameter(CS.UniformIntegerHyperparameter('restart_timeout', lower=60, upper=600, default_value=600))
 
         # parameters for the architecture
         config_space.add_hyperparameter(
