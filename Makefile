@@ -23,6 +23,8 @@ clean-runtime:
 ## Remove data files
 clean-data:
 	rm -rf data/eterna/*.rna
+	rm -rf data/eterna/raw/*.txt
+	rm -rf data/eterna/interim/*.txt
 	rm -rf data/rfam_taneda
 	rm -rf data/rfam_learn
 
