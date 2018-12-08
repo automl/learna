@@ -34,6 +34,7 @@ clean-models:
 
 ## Clean results directory
 clean-results: clean-bohb clean-timed-execution
+	rm -rf results
 
 ## Remove all files from timed execution examples
 clean-timed-execution:
