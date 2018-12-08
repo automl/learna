@@ -118,7 +118,7 @@ To have a standardized timing for all algorithms without using internal timeouts
 The following scripts are available in the `utils/` directory:
 
 * `timed_execution.py`: Script for timing control using `pynisher`
-* `execution_scripts/{LEANRA-10min, LEARNA-30min, Meta-LEARNA}.sh`: Scripts containing the final configurations
+* `execution_scripts/{LEARNA-10min, LEARNA-30min, Meta-LEARNA}.sh`: Scripts containing the final configurations
 
 All `execution_scripts` can be run locally using the `timed_execution` script. To do so run the following command after activation of the `learna` environment from the project's root directory
 ```
