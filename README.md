@@ -56,6 +56,7 @@ make requirements
 We tested the installation on the following operating systems:
 * CentOS Linux release 7.4.1708
 * Korora release 26
+* Ubuntu 16.04.5 LTS
 
 &nbsp;  
 
