@@ -381,7 +381,7 @@ bohb-example:
 		--data_dir data \
 		--nic_name lo \
 		--shared_directory results/ \
-		--mode DesignRNA-rfam
+		--mode learna
 
 
 ################################################################################
