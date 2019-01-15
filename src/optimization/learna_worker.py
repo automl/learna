@@ -39,7 +39,6 @@ class LearnaWorker(Worker):
             fc_units=config["fc_units"],
             num_lstm_layers=config["num_lstm_layers"],
             lstm_units=config["lstm_units"],
-            fc_activation=config["fc_activation"],
             embedding_size=config["embedding_size"],
         )
 
@@ -47,12 +46,9 @@ class LearnaWorker(Worker):
             learning_rate=config["learning_rate"],
             batch_size=config["batch_size"],
             entropy_regularization=config["entropy_regularization"],
-            likelihood_ratio_clipping=config["likelihood_ratio_clipping"],
         )
 
         environment_config = RnaDesignEnvironmentConfig(
-            mutation_threshold=config["mutation_threshold"],
-            include_mutation=config["mutation_threshold"] > 1,
             reward_exponent=config["reward_exponent"],
             state_radius=config["state_radius"],
         )
@@ -228,8 +224,6 @@ class LearnaWorker(Worker):
 
     @staticmethod
     def _fill_config(config):
-        config["mutation_threshold"] = 5
-
         config["conv_size1"] = 1 + 2 * config["conv_radius1"]
         if config["conv_radius1"] == 0:
             config["conv_size1"] = 0
@@ -247,11 +241,6 @@ class LearnaWorker(Worker):
             + (max_state_radius - min_state_radius) * config["state_radius_relative"]
         )
 
-        config["likelihood_ratio_clipping"] = 0.3
-        config["fc_activation"] = "relu"
-
         config["restart_timeout"] = None
-
-        config["optimization_steps"] = 1
 
         return config

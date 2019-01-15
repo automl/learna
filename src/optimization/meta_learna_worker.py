@@ -45,7 +45,6 @@ class MetaLearnaWorker(Worker):
             fc_units=config["fc_units"],
             num_lstm_layers=config["num_lstm_layers"],
             lstm_units=config["lstm_units"],
-            fc_activation=config["fc_activation"],
             embedding_size=config["embedding_size"],
         )
 
@@ -53,12 +52,9 @@ class MetaLearnaWorker(Worker):
             learning_rate=config["learning_rate"],
             batch_size=config["batch_size"],
             entropy_regularization=config["entropy_regularization"],
-            likelihood_ratio_clipping=config["likelihood_ratio_clipping"],
         )
 
         environment_config = RnaDesignEnvironmentConfig(
-            mutation_threshold=config["mutation_threshold"],
-            include_mutation=config["mutation_threshold"] > 1,
             reward_exponent=config["reward_exponent"],
             state_radius=config["state_radius"],
         )
@@ -157,7 +153,7 @@ class MetaLearnaWorker(Worker):
                 self.validation_timeout,  # timeout
                 tmp_dir,  # restore_path
                 stop_learning,  # stop_learning
-                2 * self.validation_timeout,  # restart_timeout
+                restart_timeout,  # restart_timeout
                 network_config,
                 agent_config,
                 environment_config,
@@ -291,8 +287,6 @@ class MetaLearnaWorker(Worker):
 
     @staticmethod
     def _fill_config(config):
-        config["mutation_threshold"] = 5
-
         config["conv_size1"] = 1 + 2 * config["conv_radius1"]
         if config["conv_radius1"] == 0:
             config["conv_size1"] = 0
@@ -311,10 +305,7 @@ class MetaLearnaWorker(Worker):
         )
         del config["state_radius_relative"]
 
-        config["likelihood_ratio_clipping"] = 0.3
-        config["fc_activation"] = "relu"
-
-        config["optimization_steps"] = 1
+        config["restart_timeout"] = None
 
         return config
 
