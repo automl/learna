@@ -19,7 +19,7 @@ from src.optimization.meta_learna_worker import MetaLearnaWorker
 
 
 parser = argparse.ArgumentParser(
-    description="Example 1 - sequential and local execution."
+    description="Optimization pipeline for Learning to Design RNA"
 )
 parser.add_argument(
     "--min_budget",
