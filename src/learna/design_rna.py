@@ -204,7 +204,6 @@ if __name__ == "__main__":
         entropy_regularization=args.entropy_regularization,
         likelihood_ratio_clipping=args.likelihood_ratio_clipping,
         random_agent=args.random_agent,
-        optimization_steps=args.optimization_steps,
     )
     environment_config = RnaDesignEnvironmentConfig(
         mutation_threshold=args.mutation_threshold,
