@@ -1,28 +1,29 @@
 import os
-
-os.environ["OMP_NUM_THREADS"] = "1"
-# os.environ['KMP_AFFINITY']='compact,1,0'
-
+import shutil
 import multiprocessing
+
 
 import numpy as np
 import ConfigSpace as CS
 from hpbandster.core.worker import Worker
 
-
 from src.learna.agent import NetworkConfig, get_network, AgentConfig
 from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
 from src.learna.design_rna import design_rna
+from src.learna.learn_to_design_rna import learn_to_design_rna
 
 
-class DesignRNAWorker(Worker):
-    def __init__(self, data_dir, num_cores, train_sequences, **kwargs):
+class MetaLearnaWorker(Worker):
+    def __init__(
+        self, data_dir, num_cores, train_sequences, validation_timeout=60, **kwargs
+    ):
         super().__init__(**kwargs)
         self.data_dir = data_dir
-        self.train_sequences = train_sequences
         self.num_cores = num_cores
+        self.validation_timeout = validation_timeout
+        self.train_sequences = train_sequences
 
-    def compute(self, config, budget, **kwargs):
+    def compute(self, config, budget, working_directory, config_id, **kwargs):
         """
 		Parameters
 		----------
@@ -30,6 +31,11 @@ class DesignRNAWorker(Worker):
 				cutoff for the agent on a single sequence
 		"""
 
+        tmp_dir = os.path.join(
+            working_directory, "%i_%i_%i" % (config_id[0], config_id[1], config_id[2])
+        )
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        os.makedirs(tmp_dir, exist_ok=True)
         config = self._fill_config(config)
 
         network_config = NetworkConfig(
@@ -57,42 +63,101 @@ class DesignRNAWorker(Worker):
             state_radius=config["state_radius"],
         )
 
-        validation_info = self._evaluate(
-            "rfam_learn/validation",
-            self.train_sequences,
-            budget,
-            config["restart_timeout"],
-            network_config,
-            agent_config,
-            environment_config,
-        )
+        try:
+
+            train_info = self._train(
+                network_config, agent_config, environment_config, tmp_dir, budget
+            )
+            validation_info = self._validate(
+                network_config, agent_config, environment_config, tmp_dir
+            )
+
+        except:
+            raise
 
         return {
             "loss": validation_info["sum_of_min_distances"],
-            "info": {"validation_info": validation_info},
+            "info": {"train_info": train_info, "validation_info": validation_info},
         }
+
+    def _train(self, network_config, agent_config, environment_config, tmp_dir, budget):
+
+        # create arguments for all sequences
+        train_arguments = [
+            "rfam_learn/train",
+            self.data_dir,
+            self.train_sequences,  # target_structure_ids
+            budget,  # timeout
+            self.num_cores,  # worker_count
+            tmp_dir,  # save_path
+            None,  # restore_path
+            network_config,
+            agent_config,
+            environment_config,
+        ]
+        # need to run tensoflow in a separate thread otherwise the pool in _evaluate
+        # does not work
+        with multiprocessing.Pool(1) as pool:
+            train_results = pool.apply(learn_to_design_rna, train_arguments)
+
+        train_results = process_train_results(train_results)
+
+        train_sequence_infos = {}
+        train_sum_of_min_distances = 0
+        train_sum_of_last_distances = 0
+        train_num_solved = 0
+
+        for r in train_results.values():
+            sequence_id = r[0].target_id
+            r.sort(key=lambda e: e.time)
+
+            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+
+            train_sum_of_min_distances += dists.min()
+            train_sum_of_last_distances += dists[-1]
+
+            train_num_solved += dists.min() == 0.0
+
+            train_sequence_infos[sequence_id] = {
+                "num_episodes": len(r),
+                "min_distance": float(dists.min()),
+                "last_distance": float(dists[-1]),
+            }
+
+        train_info = {
+            "num_solved": int(train_num_solved),
+            "sum_of_min_distances": float(train_sum_of_min_distances),
+            "sum_of_last_distances": float(train_sum_of_last_distances),
+            "squence_infos": train_sequence_infos,
+        }
+
+        return train_info
+
+    def _validate(self, *args, **kwargs):
+        return self._evaluate("rfam_learn/validation", range(1, 101), *args, **kwargs)
 
     def _evaluate(
         self,
         dataset,
         evaluation_sequences,
-        evaluation_timeout,
-        restart_timeout,
         network_config,
         agent_config,
         environment_config,
+        tmp_dir,
+        stop_learning=True,
     ):
 
+        print("evaluating test performance on %s" % dataset)
         evaluation_arguments = [
             [
                 dataset,
                 self.data_dir,
                 [i],  # target_structure_ids
                 None,  # target_structure_path
-                evaluation_timeout,  # timeout
-                None,  # restore_path
-                False,  # stop_learning
-                restart_timeout,  # restart_timeout
+                self.validation_timeout,  # timeout
+                tmp_dir,  # restore_path
+                stop_learning,  # stop_learning
+                2 * self.validation_timeout,  # restart_timeout
                 network_config,
                 agent_config,
                 environment_config,
@@ -143,7 +208,7 @@ class DesignRNAWorker(Worker):
         # parameters for PPO here
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
-                "learning_rate", lower=1e-5, upper=1e-3, log=True, default_value=5e-4
+                "learning_rate", lower=1e-6, upper=1e-4, log=True, default_value=1e-5
             )
         )
         config_space.add_hyperparameter(
@@ -154,19 +219,17 @@ class DesignRNAWorker(Worker):
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "entropy_regularization",
-                lower=1e-5,
-                upper=1e-2,
+                lower=5e-5,
+                upper=5e-3,
                 log=True,
                 default_value=1.5e-3,
             )
         )
-
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "reward_exponent", lower=1, upper=10, default_value=1
             )
         )
-
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "state_radius_relative", lower=0, upper=1, default_value=0
@@ -181,7 +244,7 @@ class DesignRNAWorker(Worker):
         )
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "conv_channels1", lower=1, upper=32, log=True, default_value=32
+                "conv_channels1", lower=1, upper=32, log=False, default_value=16
             )
         )
 
@@ -192,13 +255,13 @@ class DesignRNAWorker(Worker):
         )
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "conv_channels2", lower=1, upper=32, log=True, default_value=1
+                "conv_channels2", lower=1, upper=32, log=False, default_value=1
             )
         )
 
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "num_fc_layers", lower=1, upper=2, default_value=2
+                "num_fc_layers", lower=1, upper=2, default_value=1
             )
         )
         config_space.add_hyperparameter(
@@ -246,12 +309,25 @@ class DesignRNAWorker(Worker):
             min_state_radius
             + (max_state_radius - min_state_radius) * config["state_radius_relative"]
         )
+        del config["state_radius_relative"]
 
         config["likelihood_ratio_clipping"] = 0.3
         config["fc_activation"] = "relu"
 
-        config["restart_timeout"] = None
-
         config["optimization_steps"] = 1
 
         return config
+
+
+def process_train_results(train_results):
+
+    results_by_sequence = {}
+
+    for r in train_results:
+        for s in r:
+            if not s.target_id in results_by_sequence:
+                results_by_sequence[s.target_id] = [s]
+            else:
+                results_by_sequence[s.target_id].append(s)
+
+    return results_by_sequence

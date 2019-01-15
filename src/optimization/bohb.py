@@ -14,8 +14,8 @@ import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
 
 from hpbandster.optimizers import BOHB as BOHB
-from src.optimization.bohb_worker.LEARNA import DesignRNAWorker
-from src.optimization.bohb_worker.MetaLEARNA import L2DesignRNAWorker
+from src.optimization.learna_worker import LearnaWorker
+from src.optimization.meta_learna_worker import MetaLearnaWorker
 
 
 parser = argparse.ArgumentParser(
@@ -74,13 +74,13 @@ args = parser.parse_args()
 os.makedirs(args.shared_directory, exist_ok=True)
 
 if args.mode == "DesignRNA-rfam":
-    worker_cls = DesignRNAWorker
+    worker_cls = LearnaWorker
     worker_args = dict(
         data_dir=args.data_dir, num_cores=args.n_cores, train_sequences=range(1, 100, 3)
     )
 
 if args.mode == "L2DesignRNA":
-    worker_cls = L2DesignRNAWorker
+    worker_cls = MetaLearnaWorker
     worker_args = dict(
         data_dir=args.data_dir,
         num_cores=args.n_cores,
