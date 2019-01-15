@@ -64,8 +64,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--mode", choices=["DesignRNA-rfam", "L2DesignRNA"], default="DesignRNA-rfam"
-)
+parser.add_argument('--mode', choices=['learna', 'meta_learna'], default='learna'))
 
 
 # args=parser.parse_args("--run_id test --nic_name lo --shared_directory /tmp --n_cores 4 --data_dir src/data --mode L2DesignRNA".split())
@@ -73,13 +72,13 @@ args = parser.parse_args()
 
 os.makedirs(args.shared_directory, exist_ok=True)
 
-if args.mode == "DesignRNA-rfam":
+if args.mode == "learna":
     worker_cls = LearnaWorker
     worker_args = dict(
         data_dir=args.data_dir, num_cores=args.n_cores, train_sequences=range(1, 100, 3)
     )
 
-if args.mode == "L2DesignRNA":
+if args.mode == "meta_learna":
     worker_cls = MetaLearnaWorker
     worker_args = dict(
         data_dir=args.data_dir,
