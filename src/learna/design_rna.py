@@ -143,9 +143,6 @@ if __name__ == "__main__":
         "--mutation_threshold", type=int, help="Enable MUTATION with set threshold"
     )
     parser.add_argument(
-        "--include_mutation", action="store_true", help="Include MUTATION in rewards"
-    )
-    parser.add_argument(
         "--reward_exponent", default=1, type=float, help="Exponent for reward shaping"
     )
     parser.add_argument(
@@ -170,20 +167,10 @@ if __name__ == "__main__":
         "--entropy_regularization", type=float, default=1.5e-3, help="The output entropy"
     )
     parser.add_argument(
-        "--likelihood_ratio_clipping",
-        type=float,
-        default=0.2,
-        help="Likelihood ratio clipping for policy gradient",
-    )
-    parser.add_argument(
         "--restart_timeout", type=int, help="Time after which to restart the agent"
     )
-    parser.add_argument("--fc_activation", type=str, help="Activation function")
     parser.add_argument("--lstm_units", type=int, help="The number of lstm units")
     parser.add_argument("--num_lstm_layers", type=int, help="The number of lstm layers")
-    parser.add_argument(
-        "--optimization_steps", type=int, help="The number of optimization steps"
-    )
     parser.add_argument("--embedding_size", type=int, help="The size of the embedding")
 
     args = parser.parse_args()
@@ -193,7 +180,6 @@ if __name__ == "__main__":
         conv_channels=args.conv_channels,
         num_fc_layers=args.num_fc_layers,
         fc_units=args.fc_units,
-        fc_activation=args.fc_activation,
         lstm_units=args.lstm_units,
         num_lstm_layers=args.num_lstm_layers,
         embedding_size=args.embedding_size,
@@ -202,12 +188,10 @@ if __name__ == "__main__":
         learning_rate=args.learning_rate,
         batch_size=args.batch_size,
         entropy_regularization=args.entropy_regularization,
-        likelihood_ratio_clipping=args.likelihood_ratio_clipping,
         random_agent=args.random_agent,
     )
     environment_config = RnaDesignEnvironmentConfig(
         mutation_threshold=args.mutation_threshold,
-        include_mutation=args.include_mutation,
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
     )
