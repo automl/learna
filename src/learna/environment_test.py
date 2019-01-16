@@ -181,7 +181,7 @@ def test_encode_dot_bracket():
 
 
 def test_get_mutated():
-    environment_config = RnaDesignEnvironmentConfig(include_mutation=True, state_radius=0)
+    environment_config = RnaDesignEnvironmentConfig(state_radius=0)
     env = RnaDesignEnvironment(
         dataset="eterna",
         data_dir="data",
@@ -240,11 +240,7 @@ def test_assign_sites():
 
 def test_locally_improved_distance():
     environment_config = RnaDesignEnvironmentConfig(
-        mutation_threshold=5,
-        include_mutation=True,
-        reward_exponent=1,
-        state_radius=0,
-        use_conv=False,
+        mutation_threshold=5, reward_exponent=1, state_radius=0, use_conv=False
     )
     env = RnaDesignEnvironment(
         dataset="eterna",
@@ -298,11 +294,7 @@ def test_general_binary_encoding():
 
     # setup environment
     environment_config = RnaDesignEnvironmentConfig(
-        mutation_threshold=7,
-        include_mutation=False,
-        reward_exponent=1,
-        state_radius=0,
-        use_conv=False,
+        mutation_threshold=7, reward_exponent=1, state_radius=0, use_conv=False
     )
 
     env = RnaDesignEnvironment(
