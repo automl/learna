@@ -51,7 +51,7 @@ parser.add_argument(
     "--run_id",
     type=str,
     help="A unique run id for this optimization run."
-         "An easy option is to use the job id of the clusters scheduler.",
+    "An easy option is to use the job id of the clusters scheduler.",
 )
 parser.add_argument("--data_dir", type=str, help="path where the datasets are stored")
 parser.add_argument(
@@ -63,7 +63,7 @@ parser.add_argument(
     help="A directory that is accessible for all processes, e.g. a NFS share.",
 )
 
-parser.add_argument('--mode', choices=['learna', 'meta_learna'], default='learna')
+parser.add_argument("--mode", choices=["learna", "meta_learna"], default="learna")
 
 
 # args=parser.parse_args("--run_id test --nic_name lo --shared_directory /tmp --n_cores 4 --data_dir src/data --mode L2DesignRNA".split())

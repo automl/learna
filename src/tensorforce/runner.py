@@ -14,7 +14,7 @@
 # ==============================================================================
 
 # Changes from original tensorforce version include: restart capability and making
-# the weight updates optional. 
+# the weight updates optional.
 
 
 from __future__ import absolute_import

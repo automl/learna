@@ -49,8 +49,7 @@ class LearnaWorker(Worker):
         )
 
         environment_config = RnaDesignEnvironmentConfig(
-            reward_exponent=config["reward_exponent"],
-            state_radius=config["state_radius"],
+            reward_exponent=config["reward_exponent"], state_radius=config["state_radius"]
         )
 
         validation_info = self._evaluate(
