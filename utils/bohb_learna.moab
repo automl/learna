@@ -24,4 +24,4 @@ cd learna_rerun
 
 source thirdparty/miniconda/miniconda/bin/activate learna
 
-python bohb.py --min_budget 10 --max_budget 600 --n_iter 512 --n_cores 20 --shared_dir ${WSPATH}/results/bohb/${HPBJOBID} --run_id ${HPBJOBID} --nic_name ib0 --data_dir ${WSPATH}/data ${WORKERARG} --mode DesignRNA-rfam
+python -m src.optimization.bohb --min_budget 10 --max_budget 600 --n_iter 512 --n_cores 20 --shared_dir ${WSPATH}/results/bohb/${HPBJOBID} --run_id ${HPBJOBID} --nic_name ib0 --data_dir ${WSPATH}/data ${WORKERARG} --mode learna
