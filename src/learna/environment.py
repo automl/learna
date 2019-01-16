@@ -19,7 +19,6 @@ class RnaDesignEnvironmentConfig:
     Default values describe:
         mutation_threshold: Defines the minimum distance needed before applying the local
             improvement step.
-        include_mutation: If not set, the local improvement step is not part of the reward
         reward_exponent: A parameter to shape the reward function.
         state_radius: The state representation is a (2*<state_radius> + 1)-gram
             at each position.
@@ -28,7 +27,6 @@ class RnaDesignEnvironmentConfig:
     """
 
     mutation_threshold: int = 5
-    include_mutation: bool = True
     reward_exponent: float = 1.0
     state_radius: int = 5
     use_conv: bool = True
@@ -304,7 +302,6 @@ class RnaDesignEnvironment(Environment):
             environment_config: The configuration of the environment.
         """
         self._mutation_threshold = environment_config.mutation_threshold
-        self._include_mutation = environment_config.include_mutation
         self._reward_exponent = environment_config.reward_exponent
         self._state_radius = environment_config.state_radius
         self._use_embedding = environment_config.use_embedding
@@ -402,8 +399,8 @@ class RnaDesignEnvironment(Environment):
         )
         if apply_mutation:
             locally_improved_distance = self._local_improvement()
-            # If mutation found a solution use result regardless of self._include_mutation
-            if self._include_mutation or locally_improved_distance == 0:
+            # If mutation found a solution use result
+            if locally_improved_distance == 0:
                 hamming_distance = locally_improved_distance
 
         fractional_hamming_distance = hamming_distance / len(self.target)
