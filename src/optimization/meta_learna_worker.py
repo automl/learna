@@ -64,7 +64,11 @@ class MetaLearnaWorker(Worker):
                 network_config, agent_config, environment_config, tmp_dir, budget
             )
             validation_info = self._validate(
-                network_config, agent_config, environment_config, tmp_dir
+                network_config,
+                agent_config,
+                environment_config,
+                tmp_dir,
+                config["restart_timeout"],
             )
 
         except:
@@ -139,6 +143,7 @@ class MetaLearnaWorker(Worker):
         agent_config,
         environment_config,
         tmp_dir,
+        restart_timeout,
         stop_learning=True,
     ):
 
