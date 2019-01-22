@@ -141,15 +141,10 @@ reproduce-LEARNA-Eterna-%:
 		--lstm_units 7 \
 		--num_fc_layers 1 \
 		--num_lstm_layers 2 \
-		--optimization_steps 10 \
 		--reward_exponent 9.437605850994773 \
 		--mutation_threshold 5 \
-		--include_mutation \
 		--conv_sizes 0 3 \
-		--restart_timeout 1800 \
 		--state_radius 2 \
-		--likelihood_ratio_clipping 0.3 \
-		--fc_activation relu \
 		--target_structure_path data/eterna/$*.rna \
 		--timeout 86400
 
@@ -166,14 +161,10 @@ reproduce-LEARNA-Rfam-Taneda-%:
   	--lstm_units 4 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 2 \
-  	--optimization_steps 10 \
   	--reward_exponent 5.724874982958563 \
   	--mutation_threshold 5 \
   	--conv_sizes 5 3 \
   	--state_radius 16 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--include_mutation \
-  	--fc_activation relu \
   	--target_structure_path data/rfam_taneda/$*.rna \
 		--timeout 600
 
@@ -190,15 +181,10 @@ reproduce-LEARNA-Rfam-Learn-Test-%:
 		--lstm_units 7 \
 		--num_fc_layers 1 \
 		--num_lstm_layers 2 \
-		--optimization_steps 10 \
 		--reward_exponent 9.437605850994773 \
 		--mutation_threshold 5 \
-		--include_mutation \
 		--conv_sizes 0 3 \
-		--restart_timeout 1800 \
 		--state_radius 2 \
-		--likelihood_ratio_clipping 0.3 \
-		--fc_activation relu \
   	--target_structure_path data/rfam_learn/test/$*.rna \
 		--timeout 3600
 
@@ -220,14 +206,10 @@ reproduce-Meta-LEARNA-Eterna-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/eterna/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 86400 \
@@ -246,14 +228,10 @@ reproduce-Meta-LEARNA-Rfam-Taneda-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/rfam_taneda/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 600 \
@@ -272,14 +250,10 @@ reproduce-Meta-LEARNA-Rfam-Learn-Test-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/rfam_learn/test/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 3600 \
@@ -303,14 +277,10 @@ reproduce-Meta-LEARNA-Adapt-Eterna-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/eterna/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 86400
@@ -328,14 +298,10 @@ reproduce-Meta-LEARNA-Adapt-Rfam-Taneda-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/rfam_taneda/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 600
@@ -353,14 +319,10 @@ reproduce-Meta-LEARNA-Adapt-Rfam-Learn-Test-%:
   	--lstm_units 53 \
   	--num_fc_layers 1 \
   	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
   	--reward_exponent 9.224721807238447 \
   	--mutation_threshold 5 \
-  	--include_mutation \
   	--conv_size 5 7 \
   	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
   	--target_structure_path data/rfam_learn/test/$*.rna \
   	--restore_path models/trained_models/54_0_2 \
   	--timeout 3600
@@ -382,7 +344,7 @@ bohb-example:
 		--data_dir data \
 		--nic_name lo \
 		--shared_directory results/ \
-		--mode learna
+		--mode meta_learna
 
 
 ################################################################################
