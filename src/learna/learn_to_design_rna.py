@@ -124,9 +124,6 @@ if __name__ == "__main__":
         "--mutation_threshold", type=int, help="Enable MUTATION with set threshold"
     )
     parser.add_argument(
-        "--include_mutation", action="store_true", help="Include MUTATION in rewards"
-    )
-    parser.add_argument(
         "--reward_exponent", default=1, type=float, help="Exponent for reward shaping"
     )
     parser.add_argument(
@@ -154,24 +151,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--entropy_regularization", type=float, default=1.5e-3, help="The output entropy"
     )
-    parser.add_argument(
-        "--likelihood_ratio_clipping",
-        type=float,
-        default=0.3,
-        help="Likelihood ratio clipping for policy gradient",
-    )
     parser.add_argument("--embedding_size", type=int, default=0, help="Size of embedding")
     parser.add_argument(
         "--lstm_units", type=int, default=0, help="Number of lstm units in each layer"
     )
     parser.add_argument(
         "--num_lstm_layers", type=int, default=0, help="Number of lstm layers"
-    )
-    parser.add_argument(
-        "--optimization_steps", type=int, default=10, help="Optimization stps"
-    )
-    parser.add_argument(
-        "--fc_activation", type=str, default="relu", help="Activation function"
     )
 
     args = parser.parse_args()
@@ -182,17 +167,14 @@ if __name__ == "__main__":
         num_fc_layers=args.num_fc_layers,
         fc_units=args.fc_units,
         embedding_size=args.embedding_size,
-        fc_activation=args.fc_activation,
         lstm_units=args.lstm_units,
         num_lstm_layers=args.num_lstm_layers,
     )
     agent_config = AgentConfig(learning_rate=args.learning_rate)
     environment_config = RnaDesignEnvironmentConfig(
         mutation_threshold=args.mutation_threshold,
-        include_mutation=args.include_mutation,
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
-        optimization_steps=args.optimization_steps,
     )
 
     learn_to_design_rna(
