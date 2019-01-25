@@ -57,7 +57,6 @@ class LearnaWorker(Worker):
         )
 
         validation_info = self._evaluate(
-            self.train_sequences,
             budget,
             config["restart_timeout"],
             network_config,
@@ -72,7 +71,6 @@ class LearnaWorker(Worker):
 
     def _evaluate(
         self,
-        evaluation_sequences,
         evaluation_timeout,
         restart_timeout,
         network_config,
