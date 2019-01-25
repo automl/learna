@@ -52,16 +52,12 @@ class LearnaWorker(Worker):
             entropy_regularization=config["entropy_regularization"],
         )
 
-        environment_config = RnaDesignEnvironmentConfig(
+        env_config = RnaDesignEnvironmentConfig(
             reward_exponent=config["reward_exponent"], state_radius=config["state_radius"]
         )
 
         validation_info = self._evaluate(
-            budget,
-            config["restart_timeout"],
-            network_config,
-            agent_config,
-            environment_config,
+            budget, config["restart_timeout"], network_config, agent_config, env_config
         )
 
         return {
@@ -75,7 +71,7 @@ class LearnaWorker(Worker):
         restart_timeout,
         network_config,
         agent_config,
-        environment_config,
+        env_config,
     ):
 
         evaluation_arguments = [
@@ -87,7 +83,7 @@ class LearnaWorker(Worker):
                 restart_timeout,  # restart_timeout
                 network_config,
                 agent_config,
-                environment_config,
+                env_config,
             ]
             for train_sequence in self.train_sequences
         ]
@@ -105,7 +101,7 @@ class LearnaWorker(Worker):
             r.sort(key=lambda e: e.time)
 
             times = np.array(list(map(lambda e: e.time, r)))
-            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
 
             evaluation_sum_of_min_distances += dists.min()
             evaluation_sum_of_first_distances += dists[0]

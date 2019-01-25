@@ -78,16 +78,16 @@ def test_encode_dot_bracket():
     secondary = "...((...)).."
 
     # no embedding, no convolution
-    environment_config = RnaDesignEnvironmentConfig(state_radius=0)
+    env_config = RnaDesignEnvironmentConfig(state_radius=0)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [[0], [0], [0], [1], [1], [0], [0], [0], [1], [1], [0], [0]]
 
     nt.assert_equal(encoding, expected_encoding)
 
-    environment_config = RnaDesignEnvironmentConfig(state_radius=3)
+    env_config = RnaDesignEnvironmentConfig(state_radius=3)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [
         [0],
         [0],
@@ -112,31 +112,31 @@ def test_encode_dot_bracket():
     nt.assert_equal(encoding, expected_encoding)
 
     # use embedding, no convolution
-    environment_config = RnaDesignEnvironmentConfig(state_radius=3, use_embedding=True)
+    env_config = RnaDesignEnvironmentConfig(state_radius=3, use_embedding=True)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [3, 3, 3, 0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 0, 0, 3, 3, 3]
 
     nt.assert_equal(encoding, expected_encoding)
 
-    environment_config = RnaDesignEnvironmentConfig(state_radius=0, use_embedding=True)
+    env_config = RnaDesignEnvironmentConfig(state_radius=0, use_embedding=True)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 0, 0]
 
     nt.assert_equal(encoding, expected_encoding)
 
     # use convolution, no embedding
-    environment_config = RnaDesignEnvironmentConfig(state_radius=0, use_conv=True)
+    env_config = RnaDesignEnvironmentConfig(state_radius=0, use_conv=True)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [[0], [0], [0], [1], [1], [0], [0], [0], [1], [1], [0], [0]]
 
     nt.assert_equal(encoding, expected_encoding)
 
-    environment_config = RnaDesignEnvironmentConfig(state_radius=3, use_conv=True)
+    env_config = RnaDesignEnvironmentConfig(state_radius=3, use_conv=True)
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [
         [0],
         [0],
@@ -161,35 +161,35 @@ def test_encode_dot_bracket():
     nt.assert_equal(encoding, expected_encoding)
 
     # use embedding, use convolution
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         state_radius=3, use_embedding=True, use_conv=True
     )
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [3, 3, 3, 0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 0, 0, 3, 3, 3]
 
     nt.assert_equal(encoding, expected_encoding)
 
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         state_radius=0, use_embedding=True, use_conv=True
     )
 
-    encoding = _encode_dot_bracket(secondary, environment_config)
+    encoding = _encode_dot_bracket(secondary, env_config)
     expected_encoding = [0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 0, 0]
 
     nt.assert_equal(encoding, expected_encoding)
 
 
 def test_get_mutated():
-    environment_config = RnaDesignEnvironmentConfig(state_radius=0)
+    env_config = RnaDesignEnvironmentConfig(state_radius=0)
     env = RnaDesignEnvironment(
         dataset="eterna",
         data_dir="data",
         target_structure_ids=None,
         target_structure_path=None,
-        environment_config=environment_config,
+        env_config=env_config,
     )
-    env.target = _Target("...(((.....)))..", environment_config)
+    env.target = _Target("...(((.....)))..", env_config)
 
     env.design = _Design(
         primary=[
@@ -239,7 +239,7 @@ def test_assign_sites():
 
 
 def test_locally_improved_distance():
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         mutation_threshold=5, reward_exponent=1, state_radius=0, use_conv=False
     )
     env = RnaDesignEnvironment(
@@ -247,9 +247,9 @@ def test_locally_improved_distance():
         data_dir="data",
         target_structure_ids=None,
         target_structure_path=None,
-        environment_config=environment_config,
+        env_config=env_config,
     )
-    env.target = _Target("...(((.....)))..", environment_config)
+    env.target = _Target("...(((.....)))..", env_config)
 
     env.design = _Design(
         primary=[
@@ -283,7 +283,7 @@ def test_general_binary_encoding():
     target_sequence = "AAAGGGAAAAACCCAA"
     designed_dot_bracket = "................"
     target_dot_bracket = "...(((.....))).."
-    fractional_hamming_distance = hamming(target_dot_bracket, designed_dot_bracket) / len(
+    normalized_hamming_distance = hamming(target_dot_bracket, designed_dot_bracket) / len(
         target_dot_bracket
     )
 
@@ -293,7 +293,7 @@ def test_general_binary_encoding():
             yield data[0]
 
     # setup environment
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         mutation_threshold=7, reward_exponent=1, state_radius=0, use_conv=False
     )
 
@@ -302,7 +302,7 @@ def test_general_binary_encoding():
         data_dir="data",
         target_structure_ids=None,
         target_structure_path=None,
-        environment_config=environment_config,
+        env_config=env_config,
     )
 
     env._mutation_threshold = 0
@@ -311,7 +311,7 @@ def test_general_binary_encoding():
     env._state_radius = 0
     env._use_conv = False
 
-    target = _Target(target_dot_bracket, environment_config)
+    target = _Target(target_dot_bracket, env_config)
     env._target_gen = _random_epoch_gen([target])
     env.target = target
     env.design = _Design(
@@ -390,5 +390,5 @@ def test_general_binary_encoding():
     state, terminal, reward = env.execute(1)
     assert state == None
     assert terminal == True
-    assert reward == 1 - fractional_hamming_distance
+    assert reward == 1 - normalized_hamming_distance
     assert env.design.primary == designed_sequence

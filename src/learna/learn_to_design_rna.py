@@ -29,7 +29,7 @@ def learn_to_design_rna(
     restore_path,
     network_config,
     agent_config,
-    environment_config,
+    env_config,
 ):
     """
     Main function for training the agent for RNA design. Instanciate agents and environments
@@ -43,16 +43,15 @@ def learn_to_design_rna(
         restore_path: Path to restore saved configurations/models from.
         network_config: The configuration of the network.
         agent_config: The configuration of the agent.
-        environment_config: The configuration of the environment.
+        env_config: The configuration of the environment.
 
     Returns:
         Information on the episodes.
     """
-    environment_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
-    environment_config.use_embedding = bool(network_config.embedding_size)
+    env_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
+    env_config.use_embedding = bool(network_config.embedding_size)
     environments = [
-        RnaDesignEnvironment(dot_brackets, environment_config)
-        for _ in range(worker_count)
+        RnaDesignEnvironment(dot_brackets, env_config) for _ in range(worker_count)
     ]
 
     network = get_network(network_config)
@@ -163,7 +162,7 @@ if __name__ == "__main__":
         num_lstm_layers=args.num_lstm_layers,
     )
     agent_config = AgentConfig(learning_rate=args.learning_rate)
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         mutation_threshold=args.mutation_threshold,
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
@@ -181,5 +180,5 @@ if __name__ == "__main__":
         restore_path=args.restore_path,
         network_config=network_config,
         agent_config=agent_config,
-        environment_config=environment_config,
+        env_config=env_config,
     )

@@ -25,7 +25,7 @@ def _get_episode_finished(timeout, stop_once_solved):
 
         candidate_solution = env.design.primary
         last_reward = runner.episode_rewards[-1]
-        last_fractional_hamming = env.episodes_info[-1].fractional_hamming_distance
+        last_fractional_hamming = env.episodes_info[-1].normalized_hamming_distance
         elapsed_time = time.time() - start_time
         print(elapsed_time, last_reward, last_fractional_hamming, candidate_solution)
 
@@ -45,7 +45,7 @@ def design_rna(
     restart_timeout,
     network_config,
     agent_config,
-    environment_config,
+    env_config,
 ):
     """
     Main function for RNA design. Instantiate an environment and an agent to run in a
@@ -59,7 +59,7 @@ def design_rna(
         restart_timeout: Time interval for restarting of the agent.
         network_config: The configuration of the network.
         agent_config: The configuration of the agent.
-        environment_config: The configuration of the environment.
+        env_config: The configuration of the environment.
 
     Returns:
         Episode information.
@@ -71,9 +71,9 @@ def design_rna(
         device_count={"CPU": 1},
     )
 
-    environment_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
-    environment_config.use_embedding = bool(network_config.embedding_size)
-    environment = RnaDesignEnvironment(dot_brackets, environment_config)
+    env_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
+    env_config.use_embedding = bool(network_config.embedding_size)
+    environment = RnaDesignEnvironment(dot_brackets, env_config)
 
     network = get_network(network_config)
     # Runner restarts the agent by calling get_agent again
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         entropy_regularization=args.entropy_regularization,
         random_agent=args.random_agent,
     )
-    environment_config = RnaDesignEnvironmentConfig(
+    env_config = RnaDesignEnvironmentConfig(
         mutation_threshold=args.mutation_threshold,
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
@@ -199,5 +199,5 @@ if __name__ == "__main__":
         restart_timeout=args.restart_timeout,
         network_config=network_config,
         agent_config=agent_config,
-        environment_config=environment_config,
+        env_config=env_config,
     )

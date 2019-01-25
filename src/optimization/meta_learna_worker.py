@@ -63,19 +63,19 @@ class MetaLearnaWorker(Worker):
             entropy_regularization=config["entropy_regularization"],
         )
 
-        environment_config = RnaDesignEnvironmentConfig(
+        env_config = RnaDesignEnvironmentConfig(
             reward_exponent=config["reward_exponent"], state_radius=config["state_radius"]
         )
 
         try:
 
             train_info = self._train(
-                network_config, agent_config, environment_config, tmp_dir, budget
+                network_config, agent_config, env_config, tmp_dir, budget
             )
             validation_info = self._validate(
                 network_config,
                 agent_config,
-                environment_config,
+                env_config,
                 tmp_dir,
                 config["restart_timeout"],
             )
@@ -88,7 +88,7 @@ class MetaLearnaWorker(Worker):
             "info": {"train_info": train_info, "validation_info": validation_info},
         }
 
-    def _train(self, network_config, agent_config, environment_config, tmp_dir, budget):
+    def _train(self, network_config, agent_config, env_config, tmp_dir, budget):
 
         # create arguments for all sequences
         train_arguments = [
@@ -99,7 +99,7 @@ class MetaLearnaWorker(Worker):
             None,  # restore_path
             network_config,
             agent_config,
-            environment_config,
+            env_config,
         ]
         # need to run tensoflow in a separate thread otherwise the pool in _evaluate
         # does not work
@@ -117,7 +117,7 @@ class MetaLearnaWorker(Worker):
             sequence_id = r[0].target_id
             r.sort(key=lambda e: e.time)
 
-            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
 
             train_sum_of_min_distances += dists.min()
             train_sum_of_last_distances += dists[-1]
@@ -143,7 +143,7 @@ class MetaLearnaWorker(Worker):
         self,
         network_config,
         agent_config,
-        environment_config,
+        env_config,
         tmp_dir,
         restart_timeout,
         stop_learning=True,
@@ -158,7 +158,7 @@ class MetaLearnaWorker(Worker):
                 restart_timeout,  # restart_timeout
                 network_config,
                 agent_config,
-                environment_config,
+                env_config,
             ]
             for validation_sequence in self.validation_sequences
         ]
@@ -176,7 +176,7 @@ class MetaLearnaWorker(Worker):
             r.sort(key=lambda e: e.time)
 
             times = np.array(list(map(lambda e: e.time, r)))
-            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
 
             evaluation_sum_of_min_distances += dists.min()
             evaluation_sum_of_first_distances += dists[0]

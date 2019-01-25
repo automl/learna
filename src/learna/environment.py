@@ -46,28 +46,28 @@ def _string_difference_indices(s1, s2):
     return [index for index in range(len(s1)) if s1[index] != s2[index]]
 
 
-def _encode_dot_bracket(secondary, environment_config):
+def _encode_dot_bracket(secondary, env_config):
     """
     Encode the dot_bracket notated target structure. The encoding can either be binary
     or by the embedding layer.
 
     Args:
         secondary: The target structure in dot_bracket notation.
-        environment_config: The configuration of the environment.
+        env_config: The configuration of the environment.
 
     Returns:
         List of encoding for each site of the padded target structure.
     """
-    padding = "=" * environment_config.state_radius
+    padding = "=" * env_config.state_radius
     padded_secondary = padding + secondary + padding
 
-    if environment_config.use_embedding:
+    if env_config.use_embedding:
         site_encoding = {".": 0, "(": 1, ")": 2, "=": 3}
     else:
         site_encoding = {".": 0, "(": 1, ")": 1, "=": 0}
 
     # Sites corresponds to 1 pixel with 1 channel if convs are applied directly
-    if environment_config.use_conv and not environment_config.use_embedding:
+    if env_config.use_conv and not env_config.use_embedding:
         return [[site_encoding[site]] for site in padded_secondary]
     return [site_encoding[site] for site in padded_secondary]
 
@@ -125,19 +125,19 @@ class _Target(object):
 
     _id_counter = 0
 
-    def __init__(self, dot_bracket, environment_config):
+    def __init__(self, dot_bracket, env_config):
         """
         Initialize a target structure.
 
         Args:
              dot_bracket: dot_bracket encoded target structure.
-             environment_config: The environment configuration.
+             env_config: The environment configuration.
         """
         _Target._id_counter += 1
         self.id = _Target._id_counter
         self.dot_bracket = dot_bracket
         self._gap_encoding = _encode_gap(self.dot_bracket)
-        self.padded_encoding = _encode_dot_bracket(self.dot_bracket, environment_config)
+        self.padded_encoding = _encode_dot_bracket(self.dot_bracket, env_config)
 
     def __len__(self):
         return len(self.dot_bracket)
@@ -240,10 +240,10 @@ class EpisodeInfo:
     Information class.
     """
 
-    __slots__ = ["target_id", "time", "fractional_hamming_distance"]
+    __slots__ = ["target_id", "time", "normalized_hamming_distance"]
     target_id: int
     time: float
-    fractional_hamming_distance: float
+    normalized_hamming_distance: float
 
 
 class RnaDesignEnvironment(Environment):
@@ -251,22 +251,16 @@ class RnaDesignEnvironment(Environment):
     The environment for RNA design using deep reinforcement learning.
     """
 
-    def __init__(self, dot_brackets, environment_config):
+    def __init__(self, dot_brackets, env_config):
         """TODO
         Initialize an environemnt.
 
         Args:
-            environment_config: The configuration of the environment.
+            env_config: The configuration of the environment.
         """
-        self._mutation_threshold = environment_config.mutation_threshold
-        self._reward_exponent = environment_config.reward_exponent
-        self._state_radius = environment_config.state_radius
-        self._use_embedding = environment_config.use_embedding
-        self._use_conv = environment_config.use_conv
+        self._env_config = env_config
 
-        targets = [
-            _Target(dot_bracket, environment_config) for dot_bracket in dot_brackets
-        ]
+        targets = [_Target(dot_bracket, self._env_config) for dot_bracket in dot_brackets]
         self._target_gen = _random_epoch_gen(targets)
 
         self.target = None
@@ -313,7 +307,7 @@ class RnaDesignEnvironment(Environment):
             The next state.
         """
         return self.target.padded_encoding[
-            self._step : self._step + 2 * self._state_radius + 1
+            self._step : self._step + 2 * self._env_config.state_radius + 1
         ]
 
     def _local_improvement(self):
@@ -349,20 +343,20 @@ class RnaDesignEnvironment(Environment):
             return 0
 
         hamming_distance = hamming(self.design.dot_bracket, self.target.dot_bracket)
-        if 0 < hamming_distance < self._mutation_threshold:
+        if 0 < hamming_distance < self._env_config.mutation_threshold:
             hamming_distance = self._local_improvement()
 
-        fractional_hamming_distance = hamming_distance / len(self.target)
+        normalized_hamming_distance = hamming_distance / len(self.target)
 
         # For hparam optimization
         episode_info = EpisodeInfo(
             target_id=self.target.id,
             time=time.time(),
-            fractional_hamming_distance=fractional_hamming_distance,
+            normalized_hamming_distance=normalized_hamming_distance,
         )
         self.episodes_info.append(episode_info)
 
-        return (1 - fractional_hamming_distance) ** self._reward_exponent
+        return (1 - normalized_hamming_distance) ** self._env_config.reward_exponent
 
     def execute(self, actions):
         """
@@ -390,10 +384,10 @@ class RnaDesignEnvironment(Environment):
 
     @property
     def states(self):
-        type = "int" if self._use_embedding else "float"
-        if self._use_conv and not self._use_embedding:
-            return dict(type=type, shape=(1 + 2 * self._state_radius, 1))
-        return dict(type=type, shape=(1 + 2 * self._state_radius,))
+        type = "int" if self._env_config.use_embedding else "float"
+        if self._env_config.use_conv and not self._env_config.use_embedding:
+            return dict(type=type, shape=(1 + 2 * self._env_config.state_radius, 1))
+        return dict(type=type, shape=(1 + 2 * self._env_config.state_radius,))
 
     @property
     def actions(self):
