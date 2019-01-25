@@ -13,14 +13,18 @@ from hpbandster.core.worker import Worker
 from src.learna.agent import NetworkConfig, get_network, AgentConfig
 from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
 from src.learna.design_rna import design_rna
+from src.data.parse_dot_brackets import parse_dot_brackets
 
 
 class LearnaWorker(Worker):
     def __init__(self, data_dir, num_cores, train_sequences, **kwargs):
         super().__init__(**kwargs)
-        self.data_dir = data_dir
-        self.train_sequences = train_sequences
         self.num_cores = num_cores
+        self.train_sequences = parse_dot_brackets(
+            dataset="rfam_learn/validation",
+            data_dir=data_dir,
+            target_structure_ids=train_sequences,
+        )
 
     def compute(self, config, budget, **kwargs):
         """
@@ -53,7 +57,6 @@ class LearnaWorker(Worker):
         )
 
         validation_info = self._evaluate(
-            "rfam_learn/validation",
             self.train_sequences,
             budget,
             config["restart_timeout"],
@@ -69,7 +72,6 @@ class LearnaWorker(Worker):
 
     def _evaluate(
         self,
-        dataset,
         evaluation_sequences,
         evaluation_timeout,
         restart_timeout,
@@ -80,10 +82,7 @@ class LearnaWorker(Worker):
 
         evaluation_arguments = [
             [
-                dataset,
-                self.data_dir,
-                [i],  # target_structure_ids
-                None,  # target_structure_path
+                [train_sequence],
                 evaluation_timeout,  # timeout
                 None,  # restore_path
                 False,  # stop_learning
@@ -92,7 +91,7 @@ class LearnaWorker(Worker):
                 agent_config,
                 environment_config,
             ]
-            for i in evaluation_sequences
+            for train_sequence in self.train_sequences
         ]
 
         with multiprocessing.Pool(self.num_cores) as pool:

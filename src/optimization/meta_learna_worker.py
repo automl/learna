@@ -11,6 +11,7 @@ from src.learna.agent import NetworkConfig, get_network, AgentConfig
 from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
 from src.learna.design_rna import design_rna
 from src.learna.learn_to_design_rna import learn_to_design_rna
+from src.data.parse_dot_brackets import parse_dot_brackets
 
 
 class MetaLearnaWorker(Worker):
@@ -18,10 +19,18 @@ class MetaLearnaWorker(Worker):
         self, data_dir, num_cores, train_sequences, validation_timeout=60, **kwargs
     ):
         super().__init__(**kwargs)
-        self.data_dir = data_dir
         self.num_cores = num_cores
         self.validation_timeout = validation_timeout
-        self.train_sequences = train_sequences
+        self.train_sequences = parse_dot_brackets(
+            dataset="rfam_learn/train",
+            data_dir=data_dir,
+            target_structure_ids=train_sequences,
+        )
+        self.validation_sequences = parse_dot_brackets(
+            dataset="rfam_learn/validation",
+            data_dir=data_dir,
+            target_structure_ids=range(1, 101),
+        )
 
     def compute(self, config, budget, working_directory, config_id, **kwargs):
         """
@@ -83,9 +92,7 @@ class MetaLearnaWorker(Worker):
 
         # create arguments for all sequences
         train_arguments = [
-            "rfam_learn/train",
-            self.data_dir,
-            self.train_sequences,  # target_structure_ids
+            self.train_sequences,
             budget,  # timeout
             self.num_cores,  # worker_count
             tmp_dir,  # save_path
@@ -132,13 +139,8 @@ class MetaLearnaWorker(Worker):
 
         return train_info
 
-    def _validate(self, *args, **kwargs):
-        return self._evaluate("rfam_learn/validation", range(1, 101), *args, **kwargs)
-
-    def _evaluate(
+    def _validate(
         self,
-        dataset,
-        evaluation_sequences,
         network_config,
         agent_config,
         environment_config,
@@ -146,14 +148,10 @@ class MetaLearnaWorker(Worker):
         restart_timeout,
         stop_learning=True,
     ):
-
-        print("evaluating test performance on %s" % dataset)
+        print("evaluating test performance")
         evaluation_arguments = [
             [
-                dataset,
-                self.data_dir,
-                [i],  # target_structure_ids
-                None,  # target_structure_path
+                [validation_sequence],
                 self.validation_timeout,  # timeout
                 tmp_dir,  # restore_path
                 stop_learning,  # stop_learning
@@ -162,7 +160,7 @@ class MetaLearnaWorker(Worker):
                 agent_config,
                 environment_config,
             ]
-            for i in evaluation_sequences
+            for validation_sequence in self.validation_sequences
         ]
 
         with multiprocessing.Pool(self.num_cores) as pool:
@@ -315,9 +313,7 @@ class MetaLearnaWorker(Worker):
 
 
 def process_train_results(train_results):
-
     results_by_sequence = {}
-
     for r in train_results:
         for s in r:
             if not s.target_id in results_by_sequence:

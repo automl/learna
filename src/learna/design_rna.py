@@ -38,10 +38,7 @@ def _get_episode_finished(timeout, stop_once_solved):
 
 
 def design_rna(
-    dataset,
-    data_dir,
-    target_structure_ids,
-    target_structure_path,
+    dot_brackets,
     timeout,
     restore_path,
     stop_learning,
@@ -55,10 +52,7 @@ def design_rna(
     tensorforce runner.
 
     Args:
-        dataset: The name of the benchmark the dataset comes from.
-        data_dir: The path to the data of target secondary structures.
-        target_structure_ids: If given, only solutions for certain target structure are designed.
-        target_structure_path: Path to a specific target structure to predict for.
+        TODO
         timeout: Maximum time to run.
         restore_path: Path to restore saved configurations/models from.
         stop_learning: If set, no weight updates are performed (Meta-LEARNA).
@@ -76,15 +70,11 @@ def design_rna(
         allow_soft_placement=True,
         device_count={"CPU": 1},
     )
+
     environment_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
     environment_config.use_embedding = bool(network_config.embedding_size)
-    environment = RnaDesignEnvironment(
-        dataset,
-        data_dir,
-        target_structure_ids,
-        target_structure_path,
-        environment_config=environment_config,
-    )
+    environment = RnaDesignEnvironment(dot_brackets, environment_config)
+
     network = get_network(network_config)
     # Runner restarts the agent by calling get_agent again
     get_agent = get_agent_fn(
@@ -96,9 +86,7 @@ def design_rna(
     )
     runner = Runner(get_agent, environment)
 
-    # Perform multi sequence training if single id or path is given
-    single_id = target_structure_ids and len(target_structure_ids) == 1
-    stop_once_solved = single_id or target_structure_path
+    stop_once_solved = len(dot_brackets) == 1
     runner.run(
         deterministic=False,
         restart_timeout=restart_timeout,
@@ -111,6 +99,7 @@ def design_rna(
 if __name__ == "__main__":
     import argparse
     from pathlib import Path
+    from ..data.parse_dot_brackets import parse_dot_brackets
 
     parser = argparse.ArgumentParser()
 
@@ -195,12 +184,15 @@ if __name__ == "__main__":
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
     )
-
-    design_rna(
+    dot_brackets = parse_dot_brackets(
         dataset=args.dataset,
         data_dir=args.data_dir,
         target_structure_ids=args.target_structure_ids,
         target_structure_path=args.target_structure_path,
+    )
+
+    design_rna(
+        dot_brackets,
         timeout=args.timeout,
         restore_path=args.restore_path,
         stop_learning=args.stop_learning,

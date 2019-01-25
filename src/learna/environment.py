@@ -1,6 +1,5 @@
 import time
 
-from pathlib import Path
 from itertools import product
 from dataclasses import dataclass
 from distance import hamming
@@ -120,20 +119,22 @@ def _encode_gap(secondary):
 
 
 class _Target(object):
-    """
+    """TODO
     Class of the target structure. Provides encodings and id.
     """
 
-    def __init__(self, dot_bracket, environment_config, id=None):
+    _id_counter = 0
+
+    def __init__(self, dot_bracket, environment_config):
         """
         Initialize a target structure.
 
         Args:
              dot_bracket: dot_bracket encoded target structure.
              environment_config: The environment configuration.
-             id: The id of the target structure.
         """
-        self.id = id
+        _Target._id_counter += 1
+        self.id = _Target._id_counter
         self.dot_bracket = dot_bracket
         self._gap_encoding = _encode_gap(self.dot_bracket)
         self.padded_encoding = _encode_dot_bracket(self.dot_bracket, environment_config)
@@ -233,39 +234,6 @@ def _random_epoch_gen(data):
             yield data[i]
 
 
-def _get_target_gen(dataset, data_dir, target_ids, target_path, environment_config):
-    """
-    Generate the targets for next epoch.
-
-    Args:
-        dataset: The name of the benchmark to use targets from.
-        data_dir: The directory of the target structures.
-        target_ids: Use specific targets by ids.
-        target path: Specify a path to the targets.
-        environment_config: The configuration of the environment.
-
-    Returns:
-        An epoch generator for the specified target structures.
-    """
-
-    def _get_data_id_from_path(path):
-        return int(path.name[:-4])
-
-    if target_path:
-        target_paths = [target_path]
-    elif target_ids:
-        target_paths = [Path(data_dir, dataset, f"{id_}.rna") for id_ in target_ids]
-    else:
-        target_paths = list(Path(data_dir, dataset).glob("*.rna"))
-    target_ids = [_get_data_id_from_path(path) for path in target_paths]
-    dot_brackets = [data_path.read_text().rstrip() for data_path in target_paths]
-    targets = [
-        _Target(dot_bracket, environment_config, id_)
-        for dot_bracket, id_ in zip(dot_brackets, target_ids)
-    ]
-    return _random_epoch_gen(targets)
-
-
 @dataclass
 class EpisodeInfo:
     """
@@ -283,22 +251,11 @@ class RnaDesignEnvironment(Environment):
     The environment for RNA design using deep reinforcement learning.
     """
 
-    def __init__(
-        self,
-        dataset,
-        data_dir,
-        target_structure_ids,
-        target_structure_path,
-        environment_config,
-    ):
-        """
+    def __init__(self, dot_brackets, environment_config):
+        """TODO
         Initialize an environemnt.
 
         Args:
-            dataset: The benchmark to use target structures from.
-            data_dir: The path to the directory with all target structures.
-            target_structure_ids: The ids of the target structures to use (optional).
-            target_structure_path: The path to a target structure to use (optional).
             environment_config: The configuration of the environment.
         """
         self._mutation_threshold = environment_config.mutation_threshold
@@ -307,13 +264,11 @@ class RnaDesignEnvironment(Environment):
         self._use_embedding = environment_config.use_embedding
         self._use_conv = environment_config.use_conv
 
-        self._target_gen = _get_target_gen(
-            dataset,
-            data_dir,
-            target_structure_ids,
-            target_structure_path,
-            environment_config,
-        )
+        targets = [
+            _Target(dot_bracket, environment_config) for dot_bracket in dot_brackets
+        ]
+        self._target_gen = _random_epoch_gen(targets)
+
         self.target = None
         self.design = None
         self._step = None

@@ -22,9 +22,7 @@ def episode_finished(stats):
 
 
 def learn_to_design_rna(
-    dataset,
-    data_dir,
-    target_structure_ids,
+    dot_brackets,
     timeout,
     worker_count,
     save_path,
@@ -38,9 +36,7 @@ def learn_to_design_rna(
     to run in a threaded runner using asynchronous parallel PPO.
 
     Args:
-        dataset: The name of the benchmark the dataset comes from.
-        data_dir: The path to the data of target secondary structures.
-        target_structure_ids: If given, training is only performed on these target structures.
+        TODO
         timeout: Maximum time to run.
         worker_count: The number of workers to run training on.
         save_path: Path for saving the trained model.
@@ -55,15 +51,10 @@ def learn_to_design_rna(
     environment_config.use_conv = any(map(lambda x: x > 1, network_config.conv_sizes))
     environment_config.use_embedding = bool(network_config.embedding_size)
     environments = [
-        RnaDesignEnvironment(
-            dataset,
-            data_dir,
-            target_structure_ids=target_structure_ids,
-            target_structure_path=None,
-            environment_config=environment_config,
-        )
+        RnaDesignEnvironment(dot_brackets, environment_config)
         for _ in range(worker_count)
     ]
+
     network = get_network(network_config)
     agent = get_agent(
         environment=environments[0],
@@ -96,6 +87,7 @@ def learn_to_design_rna(
 
 if __name__ == "__main__":
     import argparse
+    from ..data.parse_dot_brackets import parse_dot_brackets
 
     parser = argparse.ArgumentParser()
 
@@ -176,11 +168,13 @@ if __name__ == "__main__":
         reward_exponent=args.reward_exponent,
         state_radius=args.state_radius,
     )
-
-    learn_to_design_rna(
+    dot_brackets = parse_dot_brackets(
         dataset=args.dataset,
         data_dir=args.data_dir,
         target_structure_ids=args.target_structure_ids,
+    )
+    learn_to_design_rna(
+        dot_brackets,
         timeout=args.timeout,
         worker_count=args.worker_count or multiprocessing.cpu_count(),
         save_path=args.save_path,
