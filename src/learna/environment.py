@@ -292,25 +292,6 @@ class RnaDesignEnvironment(Environment):
         self._step = 0
         return self._get_state()
 
-    def _local_improvement(self):
-        """
-        Compute Hamming distance of locally improved candidate solutions.
-
-        Returns:
-            The minimum Hamming distance of all imporved candidate solutions.
-        """
-        differing_sites = _string_difference_indices(
-            self.target.dot_bracket, self.design.dot_bracket
-        )
-        hamming_distances = []
-        for mutation in product("AGCU", repeat=len(differing_sites)):
-            mutated = self.design.get_mutated(mutation, differing_sites)
-            hamming_distance = hamming(mutated.dot_bracket, self.target.dot_bracket)
-            hamming_distances.append(hamming_distance)
-            if hamming_distance == 0:  # For better timing results
-                return 0
-        return min(hamming_distances)
-
     def _apply_action(self, action):
         """
         Assign a nucleotide to a site.
@@ -335,7 +316,26 @@ class RnaDesignEnvironment(Environment):
             self._step : self._step + 2 * self._state_radius + 1
         ]
 
-    def _get_next_reward(self, terminal):
+    def _local_improvement(self):
+        """
+        Compute Hamming distance of locally improved candidate solutions.
+
+        Returns:
+            The minimum Hamming distance of all imporved candidate solutions.
+        """
+        differing_sites = _string_difference_indices(
+            self.target.dot_bracket, self.design.dot_bracket
+        )
+        hamming_distances = []
+        for mutation in product("AGCU", repeat=len(differing_sites)):
+            mutated = self.design.get_mutated(mutation, differing_sites)
+            hamming_distance = hamming(mutated.dot_bracket, self.target.dot_bracket)
+            hamming_distances.append(hamming_distance)
+            if hamming_distance == 0:  # For better timing results
+                return 0
+        return min(hamming_distances)
+
+    def _get_reward(self, terminal):
         """
         Compute the reward after assignment of all nucleotides.
 
@@ -349,14 +349,8 @@ class RnaDesignEnvironment(Environment):
             return 0
 
         hamming_distance = hamming(self.design.dot_bracket, self.target.dot_bracket)
-        apply_mutation = (
-            self._mutation_threshold and 0 < hamming_distance < self._mutation_threshold
-        )
-        if apply_mutation:
-            locally_improved_distance = self._local_improvement()
-            # If mutation found a solution use result
-            if locally_improved_distance == 0:
-                hamming_distance = locally_improved_distance
+        if 0 < hamming_distance < self._mutation_threshold:
+            hamming_distance = self._local_improvement()
 
         fractional_hamming_distance = hamming_distance / len(self.target)
 
@@ -387,7 +381,7 @@ class RnaDesignEnvironment(Environment):
 
         terminal = self._step == len(self.target)
         state = None if terminal else self._get_state()
-        reward = self._get_next_reward(terminal)
+        reward = self._get_reward(terminal)
 
         return state, terminal, reward
 
