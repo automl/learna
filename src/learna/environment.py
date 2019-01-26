@@ -72,50 +72,20 @@ def _encode_dot_bracket(secondary, env_config):
     return [site_encoding[site] for site in padded_secondary]
 
 
-def _get_index_diff(string):
+def _encode_pairing(secondary):
+    """TODO
     """
-    Compute the index of a corresponding closing bracket to an opening bracket.
+    pairing_encoding = [None] * len(secondary)
+    stack = []
+    for index, symbol in enumerate(secondary, 0):
+        if symbol == "(":
+            stack.append(index)
+        elif symbol == ")":
+            paired_site = stack.pop()
+            pairing_encoding[paired_site] = index
+            pairing_encoding[index] = paired_site
+    return pairing_encoding
 
-    Args:
-        string: The string to compute the index of corresponding closing bracket for.
-
-    Returns:
-        The index of the corresponding closing bracket for the first opening bracket
-    """
-    bracket_count = 0
-    for index, base in enumerate(string):
-        if base == "(":
-            bracket_count += 1
-        elif base == ")":
-            bracket_count -= 1
-        else:
-            continue
-        if bracket_count == 0:
-            return index
-
-
-def _encode_gap(secondary):
-    """
-    Encode the target structure using gap encoding.
-
-    Args:
-        secondary: The secondary structure that needs to get gap encoded.
-
-    Returns:
-        Gap encoding of the target secondary structure.
-
-    Note:
-        There exists a O(n) implementation of this algorithm using a stack.
-    """
-    gap_encoding = [0 for x in secondary]
-    for index, base in enumerate(secondary):
-        if base != "(":
-            continue
-        else:
-            index_diff = _get_index_diff(secondary[index:])
-            gap_encoding[index] = index_diff
-            gap_encoding[index + index_diff] = index_diff * -1
-    return gap_encoding
 
 
 class _Target(object):
@@ -136,14 +106,11 @@ class _Target(object):
         _Target._id_counter += 1
         self.id = _Target._id_counter  # For processing results
         self.dot_bracket = dot_bracket
-        self._gap_encoding = _encode_gap(self.dot_bracket)
+        self._pairing_encoding = _encode_pairing(self.dot_bracket)
         self.padded_encoding = _encode_dot_bracket(self.dot_bracket, env_config)
 
     def __len__(self):
         return len(self.dot_bracket)
-
-    def is_paired_site(self, site):
-        return self.dot_bracket[site] != "."
 
     def get_paired_site(self, site):
         """
@@ -153,11 +120,9 @@ class _Target(object):
             site: The site to check the pairing site for.
 
         Returns:
-            The site that pairs with <site> if exists.
+            The site that pairs with <site> if exists.TODO
         """
-        if not self.is_paired_site(site):
-            return None
-        return self._gap_encoding[site] + site
+        return self._pairing_encoding[site]
 
 
 class _Design(object):
@@ -300,11 +265,8 @@ class RnaDesignEnvironment(Environment):
             action: The action chosen by the agent.
         """
         current_site = self.design.first_unassigned_site
-        if self.target.is_paired_site:
-            paired_site = self.target.get_paired_site(current_site)
-            self.design.assign_sites(action, current_site, paired_site)
-        else:
-            self.design.assign_sites(action, current_site)
+        paired_site = self.target.get_paired_site(current_site)  # None for unpaired sites
+        self.design.assign_sites(action, current_site, paired_site)
 
     def _get_state(self):
         """
