@@ -134,13 +134,16 @@ class _Target(object):
              env_config: The environment configuration.
         """
         _Target._id_counter += 1
-        self.id = _Target._id_counter
+        self.id = _Target._id_counter  # For processing results
         self.dot_bracket = dot_bracket
         self._gap_encoding = _encode_gap(self.dot_bracket)
         self.padded_encoding = _encode_dot_bracket(self.dot_bracket, env_config)
 
     def __len__(self):
         return len(self.dot_bracket)
+
+    def is_paired_site(self, site):
+        return self.dot_bracket[site] != "."
 
     def get_paired_site(self, site):
         """
@@ -152,7 +155,7 @@ class _Target(object):
         Returns:
             The site that pairs with <site> if exists.
         """
-        if self.dot_bracket[site] == ".":  # Has no paired site
+        if not self.is_paired_site(site):
             return None
         return self._gap_encoding[site] + site
 
@@ -178,6 +181,7 @@ class _Design(object):
         else:
             self._primary_list = [None] * length
         self._dot_bracket = None
+        self._current_site = 0
 
     def get_mutated(self, mutations, sites):
         """
@@ -204,6 +208,7 @@ class _Design(object):
             site: The site to which the nucleotide is assigned to.
             paired_site: defines if the site is assigned with a base pair or not.
         """
+        self._current_site += 1
         if paired_site:
             base_current, base_paired = self.action_to_pair[action]
             self._primary_list[site] = base_current
@@ -212,14 +217,17 @@ class _Design(object):
             self._primary_list[site] = self.action_to_base[action]
 
     @property
-    def primary(self):
-        return "".join(self._primary_list)
+    def first_unassigned_site(self):
+        try:
+            while self._primary_list[self._current_site] is not None:
+                self._current_site += 1
+            return self._current_site
+        except IndexError:
+            return None
 
     @property
-    def dot_bracket(self):
-        if not self._dot_bracket:
-            self._dot_bracket, _ = fold(self.primary)
-        return self._dot_bracket
+    def primary(self):
+        return "".join(self._primary_list)
 
 
 def _random_epoch_gen(data):
@@ -265,7 +273,6 @@ class RnaDesignEnvironment(Environment):
 
         self.target = None
         self.design = None
-        self._step = None
         self.episodes_info = []
 
     def __str__(self):
@@ -283,7 +290,6 @@ class RnaDesignEnvironment(Environment):
         """
         self.target = next(self._target_gen)
         self.design = _Design(len(self.target))
-        self._step = 0
         return self._get_state()
 
     def _apply_action(self, action):
@@ -293,11 +299,12 @@ class RnaDesignEnvironment(Environment):
         Args:
             action: The action chosen by the agent.
         """
-        paired_site = self.target.get_paired_site(self._step)
-        if paired_site:
-            self.design.assign_sites(action, self._step, paired_site)
+        current_site = self.design.first_unassigned_site
+        if self.target.is_paired_site:
+            paired_site = self.target.get_paired_site(current_site)
+            self.design.assign_sites(action, current_site, paired_site)
         else:
-            self.design.assign_sites(action, self._step)
+            self.design.assign_sites(action, current_site)
 
     def _get_state(self):
         """
@@ -306,11 +313,12 @@ class RnaDesignEnvironment(Environment):
         Returns:
             The next state.
         """
+        start = self.design.first_unassigned_site
         return self.target.padded_encoding[
-            self._step : self._step + 2 * self._env_config.state_radius + 1
+            start : start + 2 * self._env_config.state_radius + 1
         ]
 
-    def _local_improvement(self):
+    def _local_improvement(self, folded_design):
         """
         Compute Hamming distance of locally improved candidate solutions.
 
@@ -318,12 +326,13 @@ class RnaDesignEnvironment(Environment):
             The minimum Hamming distance of all imporved candidate solutions.
         """
         differing_sites = _string_difference_indices(
-            self.target.dot_bracket, self.design.dot_bracket
+            self.target.dot_bracket, folded_design
         )
         hamming_distances = []
         for mutation in product("AGCU", repeat=len(differing_sites)):
             mutated = self.design.get_mutated(mutation, differing_sites)
-            hamming_distance = hamming(mutated.dot_bracket, self.target.dot_bracket)
+            folded_mutated, _ = fold(mutated.primary)
+            hamming_distance = hamming(folded_mutated, self.target.dot_bracket)
             hamming_distances.append(hamming_distance)
             if hamming_distance == 0:  # For better timing results
                 return 0
@@ -342,9 +351,10 @@ class RnaDesignEnvironment(Environment):
         if not terminal:
             return 0
 
-        hamming_distance = hamming(self.design.dot_bracket, self.target.dot_bracket)
+        folded_design, _ = fold(self.design.primary)
+        hamming_distance = hamming(folded_design, self.target.dot_bracket)
         if 0 < hamming_distance < self._env_config.mutation_threshold:
-            hamming_distance = self._local_improvement()
+            hamming_distance = self._local_improvement(folded_design)
 
         normalized_hamming_distance = hamming_distance / len(self.target)
 
@@ -371,9 +381,8 @@ class RnaDesignEnvironment(Environment):
             reward: The reward if at terminal timestep, else 0.
         """
         self._apply_action(actions)
-        self._step += 1
 
-        terminal = self._step == len(self.target)
+        terminal = self.design.first_unassigned_site is None
         state = None if terminal else self._get_state()
         reward = self._get_reward(terminal)
 
