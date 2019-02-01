@@ -1293,7 +1293,7 @@ def test_RnaDesignEnvironment_get_reward():
     assert 1.0 == environment._get_reward(True)
 
 
-def test_RnaDesignEnvironment_execute(capsys):
+def test_RnaDesignEnvironment_execute():
     actions = [1, 0, 1, 3, 2, 1, 3]  # Actions correspond to valid solution
     dot_brackets = ["(((....)))"]
 
@@ -1317,6 +1317,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1344,6 +1345,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # No conv, embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1365,6 +1367,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1392,6 +1395,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Conv, no embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1413,6 +1417,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1440,6 +1445,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Conv, embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1461,6 +1467,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1488,6 +1495,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     actions = [0, 1, 0, 1, 2, 1]  # Actions correspond to valid solution
     dot_brackets = ["((....))"]
@@ -1512,6 +1520,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1539,6 +1548,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # No conv, embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1560,6 +1570,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1587,6 +1598,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Conv, no embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1608,6 +1620,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1635,6 +1648,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Conv, embedding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1656,6 +1670,7 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
 
     # Include padding
     environment_config = RnaDesignEnvironmentConfig(
@@ -1683,3 +1698,4 @@ def test_RnaDesignEnvironment_execute(capsys):
             break
         assert states[index] == state
         assert 0 == reward
+        assert False == terminal
