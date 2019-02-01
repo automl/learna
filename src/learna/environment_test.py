@@ -134,6 +134,8 @@ def test_encode_pairing():
 
 def test_Target():
     dot_bracket = "..((..))."
+
+    # No conv, no embedding
     environment_config = RnaDesignEnvironmentConfig(
         use_conv=False, use_embedding=False, state_radius=0
     )
@@ -148,13 +150,119 @@ def test_Target():
         for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
     ]
 
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=False, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 2 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [int(site) for site in "00011001100"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # No conv, embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=True, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 3 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [int(site) for site in "001100220"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=True, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 4 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [int(site) for site in "30011002203"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # Conv, embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=True, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 5 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [int(site) for site in "001100220"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=True, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 6 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [int(site) for site in "30011002203"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # Conv, no embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=False, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 7 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [[int(site)] for site in "001100110"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=False, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    assert 8 == target.id
+    assert "..((..))." == target.dot_bracket
+    assert [[int(site)] for site in "00011001100"] == target.padded_encoding
+
+    [
+        nt.assert_equal(site, target.get_paired_site(index))
+        for index, site in enumerate([None, None, 7, 6, None, None, 3, 2, None])
+    ]
+
 
 def test_Design():
     # Test Initialization
     with nt.assert_raises(TypeError):
         design = _Design()  # TODO: Handle TypeError caused by NoneType initialization
-
     dot_bracket = "..((..))."
+
+    # No conv, no embedding
     environment_config = RnaDesignEnvironmentConfig(
         use_conv=False, use_embedding=False, state_radius=0
     )
@@ -192,6 +300,471 @@ def test_Design():
         site = [3]
         mutated = design.get_mutated(mutation, site)
         assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=False, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # No conv, embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=True, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=False, use_embedding=True, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Conv, embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=True, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=True, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Conv, no embedding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=False, state_radius=0
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
+
+    # Include padding
+    environment_config = RnaDesignEnvironmentConfig(
+        use_conv=True, use_embedding=False, state_radius=1
+    )
+
+    target = _Target(dot_bracket, environment_config)
+    design = _Design(length=len(target))
+
+    with nt.assert_raises(TypeError):
+        design.primary  # TODO: Handle TypeError caused by NoneType init
+
+    assert design.first_unassigned_site == 0
+
+    # Test nucleotide assignment
+    for i in range(len(dot_bracket)):
+        if dot_bracket[i] == ")":
+            continue
+        action = 0
+        site = design.first_unassigned_site
+        design.assign_sites(action, site, paired_site=target.get_paired_site(site))
+
+    assert "GGGGGGCCG" == design.primary
+
+    # Test Local Improvement procedure
+    mutations = "AGCU"
+
+    for mutation in mutations:
+        site = [1]
+        mutated = design.get_mutated(mutation, site)
+        assert f"G{mutation}GGGGCCG" == mutated.primary
+
+        site = [2]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GG{mutation}GGGCCG" == mutated.primary
+
+        site = [3]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGG{mutation}GGCCG" == mutated.primary
+
+        site = [4]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGG{mutation}GCCG" == mutated.primary
+
+        site = [5]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGG{mutation}CCG" == mutated.primary
+
+        site = [6]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGG{mutation}CG" == mutated.primary
+
+        site = [7]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGC{mutation}G" == mutated.primary
+
+        site = [8]
+        mutated = design.get_mutated(mutation, site)
+        assert f"GGGGGGCC{mutation}" == mutated.primary
+
+        with nt.assert_raises(IndexError):
+            site = [9]
+            mutated = design.get_mutated(mutation, site)
 
 
 def test_RnaDesignEnvironment_reset():
