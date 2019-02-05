@@ -1,0 +1,30 @@
+#! /bin/bash
+
+#MSUB -E
+#MSUB -e logs/${MOAB_JOBID}.e
+#MSUB -o logs/${MOAB_JOBID}.o
+#MSUB -l nodes=1:ppn=20,walltime=4:00:00:00
+#MSUB -t [1-50]
+
+WSPATH=/work/ws/nemo/fr_ds371-learna-0/
+HPBJOBID=$(echo ${MOAB_JOBID} | cut -f 1 -d "[")
+
+WORKERARG=""
+
+if [ ${MOAB_JOBARRAYINDEX} -gt 1 ]
+then
+	WORKERARG="--worker"
+fi
+
+printenv
+pwd
+echo $HPBJOBID
+
+mkdir $TMPDIR/${MOAB_JOBID}
+tar -xzvf /work/ws/nemo/fr_ds371-learna-0/data/rfam_learn.tar.gz -C $TMPDIR/${MOAB_JOBID}
+
+cd learna_new_codebase
+
+source thirdparty/miniconda/miniconda/bin/activate learna
+
+python -m src.optimization.bohb --min_budget 60 --max_budget 1800 --n_iter 512 --n_cores 20 --shared_dir ${WSPATH}/results/bohb/${HPBJOBID} --run_id ${HPBJOBID} --nic_name ib0 --data_dir $TMPDIR/${MOAB_JOBID} ${WORKERARG} --mode learna
