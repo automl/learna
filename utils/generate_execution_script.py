@@ -51,13 +51,23 @@ def _fill_config(config, mode):
         config["conv_size2"] = 0
     del config["conv_radius2"]
 
-    min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
-    max_state_radius = 32
-    config["state_radius"] = int(
-        min_state_radius
-        + (max_state_radius - min_state_radius) * config["state_radius_relative"]
-    )
-    del config['state_radius_relative']
+    if config["conv_size1"] != 0:
+        min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
+        max_state_radius = 32
+        config["state_radius"] = int(
+            min_state_radius
+            + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+        )
+        del config['state_radius_relative']
+    else:
+        min_state_radius = config["conv_size2"] + config["conv_size2"] - 1
+        max_state_radius = 32
+        config["state_radius"] = int(
+            min_state_radius
+            + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+        )
+        del config['state_radius_relative']
+
 
     if mode in timeouts:
         config["restart_timeout"] = timeouts[mode]
