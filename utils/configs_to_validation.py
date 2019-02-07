@@ -31,7 +31,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write('RESULTS_DIR="${WORKSPACE}/results"\n')
         validation_script.write('\n')
 
-        validation_script.write('source /home/alpha/uni/learna/thirdparty/miniconda/miniconda/bin/activate learna\n')
+        validation_script.write(f"source {root_dir}/thirdparty/miniconda/miniconda/bin/activate learna\n")
         validation_script.write('python -m src.learna.learn_to_design_rna \\\n')
         validation_script.write('  --data_dir ${DATA_DIR} \\\n')
         validation_script.write('  --dataset rfam_learn/train \\\n')
