@@ -57,6 +57,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
 
         validation_script.write('\n')
         validation_script.write(f"python utils/generate_execution_script.py --config_id {config_id} " + '--config \"' + f"{config}" + '\" ' + '--job_id validation_${MOAB_JOBARRAYINDEX}_' + f"{job_id} --mode meta_learna --output_dir {output_dir} " + '--restore_path $TMPDIR/${MOAB_JOBID}/models/${MOAB_JOBARRAYINDEX}/' + '\n')
+        validation_script.write(f"chmod a+rwx {root_dir}/utils/execution_scripts/validation_${MOAB_JOBARRAYINDEX}_' + f"{job_id}_{config_id}".sh")                                        
         validation_script.write('\n')
 
         validation_script.write('i=1; while [[ i -le 1 ]];\n')
@@ -66,7 +67,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write('  --data_dir $TMPDIR/${MOAB_JOBID} \\\n')
         validation_script.write('  --results_dir $RESULTS_DIR \\\n')
         validation_script.write('  --experiment_group validation \\\n')
-        validation_script.write('  --method validation_${MOAB_JOBARRAYINDEX}_' + f"{job_id}_{config_id} " + '\\\n')
+        validation_script.write('  --method validation_${MOAB_JOBARRAYINDEX}_' + f"{job_id}_{config_id}" + '\\\n')
         validation_script.write('  --dataset rfam_learn/validation \\\n')
         validation_script.write('  --task_id $i);\n')
         validation_script.write('let i=$i+1; done\n')
@@ -90,13 +91,23 @@ def _fill_config(config, mode):
         config["conv_size2"] = 0
     del config["conv_radius2"]
 
-    min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
-    max_state_radius = 32
-    config["state_radius"] = int(
-        min_state_radius
-        + (max_state_radius - min_state_radius) * config["state_radius_relative"]
-    )
-    del config['state_radius_relative']
+    if config["conv_size1"] != 0:
+        min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
+        max_state_radius = 32
+        config["state_radius"] = int(
+            min_state_radius
+            + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+        )
+        del config['state_radius_relative']
+    else:
+        min_state_radius = config["conv_size2"] + config["conv_size2"] - 1
+        max_state_radius = 32
+        config["state_radius"] = int(
+            min_state_radius
+            + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+        )
+        del config['state_radius_relative']
+
 
     if mode in timeouts:
         config["restart_timeout"] = timeouts[mode]
