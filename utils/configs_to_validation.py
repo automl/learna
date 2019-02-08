@@ -117,12 +117,14 @@ def _fill_config(config, mode):
 
 if __name__ == '__main__':
     import argparse
+    import ast
     parser = argparse.ArgumentParser()
     parser.add_argument("--job_id", default='12345', help="Id of the job that produced the config")
     parser.add_argument("--mode", default='learna', help="one of learna, meta_learna, meta_learna_adapt")
     parser.add_argument("--root_dir", type=Path, help="Define if validation pipeline file is produced")
     parser.add_argument("--config_id", default='(0, 0, 0)', help="Id of the config received from BOHB")
-
+    parser.add_argument("--config", default=None, help="The configuration received from BOHB")
+    
     args = parser.parse_args()
 
     config_id = args.config_id
@@ -131,9 +133,6 @@ if __name__ == '__main__':
     config_id = config_id.replace(',', '_')
     config_id = ''.join(config_id.split())
 
-    config = {'batch_size': 78, 'conv_channels1': 22, 'conv_channels2': 22, 'conv_radius1': 0, 'conv_radius2': 3, 'embedding_size': 0, 'entropy_regularization': 0.00010469282668627605, 'fc_units': 34, 'learning_rate': 0.00015149356071984718, 'lstm_units': 36, 'num_fc_layers': 1, 'num_lstm_layers': 0, 'reward_exponent': 4.486673165414606, 'state_radius_relative': 0.11994062473492281}
-    print(config_id)
-
-    # generate_execution_script(config_id, config, args.job_id, args.output_dir, args.mode)
+    config = ast.literal_eval(args.config)
 
     generate_validation_pipeline_file(config_id, config, args.job_id, args.mode, args.root_dir.resolve())
