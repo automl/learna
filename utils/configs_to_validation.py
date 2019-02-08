@@ -42,7 +42,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write("\n")
 
         validation_script.write("mkdir $TMPDIR/${MOAB_JOBID}\n")
-        validation_script.write("mkdir $TMPDIR/${MOAB_JOBID}/models\n")
+        validation_script.write("mkdir $TMPDIR/models\n")
         validation_script.write(
             "tar -xzvf /work/ws/nemo/fr_ds371-learna-0/data/rfam_learn.tar.gz -C $TMPDIR/${MOAB_JOBID}\n"
         )
@@ -61,7 +61,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write("  --data_dir ${DATA_DIR} \\\n")
         validation_script.write("  --dataset rfam_learn/train \\\n")
         validation_script.write(
-            "  --save_path $TMPDIR/${MOAB_JOBID}/models/${MOAB_JOBARRAYINDEX}/ \\\n"
+            "  --save_path $TMPDIR/models/${MOAB_JOBARRAYINDEX}/ \\\n"
         )
         validation_script.write("  --timeout 30 \\\n")
         validation_script.write("  --worker_count 20 \\\n")
@@ -79,7 +79,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
             + '" '
             + "--job_id validation_${MOAB_JOBARRAYINDEX}_"
             + f"{job_id} --mode meta_learna --output_dir {output_dir} "
-            + "--restore_path $TMPDIR/${MOAB_JOBID}/models/${MOAB_JOBARRAYINDEX}/"
+            + "--restore_path $TMPDIR/models/${MOAB_JOBARRAYINDEX}/"
             + "\n"
         )
         validation_script.write(
@@ -108,7 +108,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
 
         validation_script.write("\n")
         validation_script.write(
-            "cp -r $TMPDIR/${MOAB_JOBID}/models/${MOAB_JOBARRAYINDEX}/"
+            "cp -r $TMPDIR/models/${MOAB_JOBARRAYINDEX}/"
             + f" {root_dir}/models/"
             + "validation_${MOAB_JOBARRAYINDEX}_"
             + f"{job_id}_{config_id}"
