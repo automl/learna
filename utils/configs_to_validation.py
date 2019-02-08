@@ -23,7 +23,7 @@ def _write_config(config, execution_script):
             execution_script.write(f"  --{entry} {config[entry]} \\\n")
 
 
-def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir):
+def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir, repeats, validations):
     if not _validate_config(config):
         config = _fill_config(config, mode)
 
@@ -38,7 +38,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write("#MSUB -l nodes=1:ppn=20\n")
         validation_script.write("#MSUB -l walltime=0:00:15:00\n")
         validation_script.write("#MSUB -l pmem=5gb\n")
-        validation_script.write("#MSUB -t 1-2\n")
+        validation_script.write("#MSUB -t 1-" + f"{repeats}\n")
         validation_script.write("\n")
 
         validation_script.write("mkdir $TMPDIR/${MOAB_JOBID}\n")
@@ -89,8 +89,9 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
             + "\n"
         )
         validation_script.write("\n")
+        validation_times = 1 * validations
 
-        validation_script.write("i=1; while [[ i -le 1 ]];\n")
+        validation_script.write("i=1; while [[ i -le" + f" {validation_times} ]];\n")
         validation_script.write("do \\\n")
         validation_script.write("$(python utils/timed_execution.py \\\n")
         validation_script.write("  --timeout 30 \\\n")
@@ -173,6 +174,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config", default=None, help="The configuration received from BOHB"
     )
+    parser.add_argument(
+        "--num_repeats", type=int, help="The number of retrains of a given config"
+    )
+    parser.add_argument(
+        "--num_validations", default=None, help="The number a given config is validated"
+    )
+
 
     args = parser.parse_args()
 
@@ -185,5 +193,5 @@ if __name__ == "__main__":
     config = ast.literal_eval(args.config)
 
     generate_validation_pipeline_file(
-        config_id, config, args.job_id, args.mode, args.root_dir.resolve()
+        config_id, config, args.job_id, args.mode, args.root_dir.resolve(), args.num_repeats, args.num_validations
     )
