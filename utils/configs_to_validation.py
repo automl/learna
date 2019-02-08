@@ -23,7 +23,9 @@ def _write_config(config, execution_script):
             execution_script.write(f"  --{entry} {config[entry]} \\\n")
 
 
-def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir, repeats, validations):
+def generate_validation_pipeline_file(
+    config_id, config, job_id, mode, root_dir, repeats, validations
+):
     if not _validate_config(config):
         config = _fill_config(config, mode)
 
@@ -52,6 +54,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir,
         validation_script.write("WORKSPACE=$(cat utils/workspace.txt)\n")
         validation_script.write('DATA_DIR="$TMPDIR/${MOAB_JOBID}"\n')
         validation_script.write('RESULTS_DIR="${WORKSPACE}/results"\n')
+        validation_script.write('MODEL_DIR="${WORKSPACE}/models"')
         validation_script.write("\n")
 
         validation_script.write(
@@ -61,7 +64,9 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir,
         validation_script.write("  --data_dir ${DATA_DIR} \\\n")
         validation_script.write("  --dataset rfam_learn/train \\\n")
         validation_script.write(
-            "  --save_path $TMPDIR/models/${MOAB_JOBARRAYINDEX}/ \\\n"
+            "  --save_path ${MODEL_DIR}/validation/"
+            + f"{job_id}_{config_id}"
+            + "/${MOAB_JOBARRAYINDEX}/ \\\n"
         )
         validation_script.write("  --timeout 30 \\\n")
         validation_script.write("  --worker_count 20 \\\n")
@@ -79,7 +84,9 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir,
             + '" '
             + "--job_id validation_${MOAB_JOBARRAYINDEX}_"
             + f"{job_id} --mode meta_learna --output_dir {output_dir} "
-            + "--restore_path $TMPDIR/models/${MOAB_JOBARRAYINDEX}/"
+            + "--restore_path ${MODEL_DIR}/validation/"
+            + f"{job_id}_{config_id}"
+            + "/${MOAB_JOBARRAYINDEX}/"
             + "\n"
         )
         validation_script.write(
@@ -109,7 +116,9 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir,
 
         validation_script.write("\n")
         validation_script.write(
-            "cp -r $TMPDIR/models/${MOAB_JOBARRAYINDEX}/"
+            "cp -r ${MODEL_DIR}/validation/"
+            + f"{job_id}_{config_id}"
+            + "/${MOAB_JOBARRAYINDEX}/"
             + f" {root_dir}/models/"
             + "validation_${MOAB_JOBARRAYINDEX}_"
             + f"{job_id}_{config_id}"
@@ -181,7 +190,6 @@ if __name__ == "__main__":
         "--num_validations", default=None, help="The number a given config is validated"
     )
 
-
     args = parser.parse_args()
 
     config_id = args.config_id
@@ -193,5 +201,11 @@ if __name__ == "__main__":
     config = ast.literal_eval(args.config)
 
     generate_validation_pipeline_file(
-        config_id, config, args.job_id, args.mode, args.root_dir.resolve(), args.num_repeats, args.num_validations
+        config_id,
+        config,
+        args.job_id,
+        args.mode,
+        args.root_dir.resolve(),
+        args.num_repeats,
+        args.num_validations,
     )
