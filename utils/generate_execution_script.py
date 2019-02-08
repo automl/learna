@@ -77,6 +77,7 @@ def _fill_config(config, mode):
 
 if __name__ == '__main__':
     import argparse
+    import ast
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output_dir", type=Path, help="Directory were the files will be stored"
@@ -96,7 +97,6 @@ if __name__ == '__main__':
     config_id = config_id.replace(',', '_')
     config_id = ''.join(config_id.split())
 
-    config = {'batch_size': 78, 'conv_channels1': 22, 'conv_channels2': 22, 'conv_radius1': 0, 'conv_radius2': 3, 'embedding_size': 0, 'entropy_regularization': 0.00010469282668627605, 'fc_units': 34, 'learning_rate': 0.00015149356071984718, 'lstm_units': 36, 'num_fc_layers': 1, 'num_lstm_layers': 0, 'reward_exponent': 4.486673165414606, 'state_radius_relative': 0.11994062473492281}
-    print(config_id)
+    config = ast.literal_eval(args.config)
 
     generate_execution_script(config_id, config, args.job_id, args.output_dir, args.mode, args.restore_path)
