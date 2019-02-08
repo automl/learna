@@ -35,7 +35,8 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write("#MSUB -E\n")
         validation_script.write("#MSUB -e logs/${MOAB_JOBID}.e\n")
         validation_script.write("#MSUB -o logs/${MOAB_JOBID}.o\n")
-        validation_script.write("#MSUB -l nodes=1:ppn=20, walltime=0:00:15:00\n")
+        validation_script.write("#MSUB -l nodes=1:ppn=20\n")
+        validation_script.write("#MSUB -l walltime=0:00:15:00\n")
         validation_script.write("#MSUB -l pmem=5gb\n")
         validation_script.write("#MSUB -t 1-2\n")
         validation_script.write("\n")
@@ -95,7 +96,7 @@ def generate_validation_pipeline_file(config_id, config, job_id, mode, root_dir)
         validation_script.write("  --timeout 30 \\\n")
         validation_script.write("  --data_dir $TMPDIR/${MOAB_JOBID} \\\n")
         validation_script.write("  --results_dir $RESULTS_DIR \\\n")
-        validation_script.write("  --experiment_group validation \\\n")
+        validation_script.write("  --experiment_group validation_iclr \\\n")
         validation_script.write(
             "  --method validation_${MOAB_JOBARRAYINDEX}_"
             + f"{job_id}_{config_id}"
