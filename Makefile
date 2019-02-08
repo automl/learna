@@ -394,7 +394,7 @@ nemo-eterna-%:
 		-v EXPERIMENT_GROUP=first_bohb_rerun
 
 ## Generate files for validation pipeline on cluster
-validation-files:
+meta-LEARNA-validation-files:
 	@source activate learna && \
 	python -m utils.configs_to_validation \
 	  --config "{'batch_size': 80, 'conv_channels1': 32, 'conv_channels2': 14, 'embedding_size': 1, 'entropy_regularization': 0.000198389753598839, 'fc_units': 9, 'learning_rate': 6.374026866356635e-05, 'lstm_units': 53, 'num_fc_layers': 1, 'num_lstm_layers': 0, 'reward_exponent': 9.224721807238447, 'conv_size1': 5, 'conv_size2': 7, 'state_radius': 26}" \
@@ -402,8 +402,8 @@ validation-files:
 		--job_id 00000 \
 		--mode learna \
 		--root_dir $(PWD) \
-		--num_repeats 2 \
-		--num_validations 1
+		--num_repeats 10 \
+		--num_validations 3
 
 
 ################################################################################
