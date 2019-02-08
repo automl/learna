@@ -38,7 +38,7 @@ def generate_validation_pipeline_file(
         validation_script.write("#MSUB -e logs/${MOAB_JOBID}.e\n")
         validation_script.write("#MSUB -o logs/${MOAB_JOBID}.o\n")
         validation_script.write("#MSUB -l nodes=1:ppn=20\n")
-        validation_script.write("#MSUB -l walltime=0:00:15:00\n")
+        validation_script.write("#MSUB -l walltime=1:00:00:00\n")
         validation_script.write("#MSUB -l pmem=5gb\n")
         validation_script.write("#MSUB -t 1-" + f"{repeats}\n")
         validation_script.write("\n")
@@ -54,7 +54,7 @@ def generate_validation_pipeline_file(
         validation_script.write("WORKSPACE=$(cat utils/workspace.txt)\n")
         validation_script.write('DATA_DIR="$TMPDIR/${MOAB_JOBID}"\n')
         validation_script.write('RESULTS_DIR="${WORKSPACE}/results"\n')
-        validation_script.write('MODEL_DIR="${WORKSPACE}/models"')
+        validation_script.write('MODEL_DIR="${WORKSPACE}/models"\n')
         validation_script.write("\n")
 
         validation_script.write(
@@ -68,7 +68,7 @@ def generate_validation_pipeline_file(
             + f"{job_id}_{config_id}"
             + "/${MOAB_JOBARRAYINDEX}/ \\\n"
         )
-        validation_script.write("  --timeout 30 \\\n")
+        validation_script.write("  --timeout 3600 \\\n")
         validation_script.write("  --worker_count 20 \\\n")
         validation_script.write("  --mutation_threshold 5 \\\n")
 
@@ -96,12 +96,12 @@ def generate_validation_pipeline_file(
             + "\n"
         )
         validation_script.write("\n")
-        validation_times = 1 * validations
+        validation_times = 100 * validations
 
         validation_script.write("i=1; while [[ i -le" + f" {validation_times} ]];\n")
         validation_script.write("do \\\n")
         validation_script.write("$(python utils/timed_execution.py \\\n")
-        validation_script.write("  --timeout 30 \\\n")
+        validation_script.write("  --timeout 180 \\\n")
         validation_script.write("  --data_dir $TMPDIR/${MOAB_JOBID} \\\n")
         validation_script.write("  --results_dir $RESULTS_DIR \\\n")
         validation_script.write("  --experiment_group validation_iclr \\\n")
