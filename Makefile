@@ -94,20 +94,20 @@ requirements:
 experiment-test:
 	@source activate learna && \
 	python -m src.learna.design_rna \
-	--batch_size 79 \
-	--conv_channels 10 3 \
-	--embedding_size 0 \
-	--entropy_regularization 0.0001628733797899296 \
-	--fc_units 32 \
-	--learning_rate 0.00033766914645516697 \
-	--lstm_units 7 \
-	--num_fc_layers 1 \
-	--num_lstm_layers 2 \
-	--reward_exponent 9.437605850994773 \
 	--mutation_threshold 5 \
-	--conv_sizes 0 3 \
+  --batch_size 78 \
+  --conv_size 0 7 \
+  --conv_channels 22 22 \
+  --embedding_size 0 \
+  --entropy_regularization 0.00010469282668627605 \
+  --fc_units 34 \
+  --learning_rate 0.00015149356071984718 \
+  --lstm_units 36 \
+  --num_fc_layers 1 \
+  --num_lstm_layers 0 \
+  --reward_exponent 4.486673165414606 \
+  --state_radius 2 \
 	--restart_timeout 1800 \
-	--state_radius 2 \
 	--target_structure_path data/eterna/2.rna \
 	--timeout 30
 
@@ -344,7 +344,64 @@ bohb-example:
 		--data_dir data \
 		--nic_name lo \
 		--shared_directory results/ \
-		--mode meta_learna
+		--mode learna
+
+################################################################################
+# Run experiments on cluster
+################################################################################
+
+## Submitt a test on MOAB cluster%
+nemo-test-%:
+	msub utils/rna_single.moab \
+		-l walltime=100 \
+		-t 1-2 \
+		-v METHOD=$* \
+		-v DATASET=rfam_learn/test \
+		-v TIMEOUT=60 \
+		-v EXPERIMENT_GROUP=test_rerun
+
+
+## Start experiment on Rfam-Learn benchmark
+nemo-rfam-learn-test-%:
+	msub utils/rna_single.moab \
+		-l walltime=5000 \
+		-t 1-500 \
+		-v METHOD=$* \
+		-v DATASET=rfam_learn/test \
+		-v TIMEOUT=3600 \
+		-v EXPERIMENT_GROUP=first_bohb_rerun
+
+
+## Start experiment on the Rfam Taneda benchmark
+nemo-rfam-taneda-%:
+	msub utils/rna_single.moab \
+		-l walltime=1000 \
+		-t 1-1450 \
+		-v METHOD=$* \
+		-v DATASET=rfam_taneda \
+		-v TIMEOUT=600 \
+		-v EXPERIMENT_GROUP=first_bohb_rerun
+
+
+## Start experiment on the Eterna100 benchmark
+nemo-eterna-%:
+	msub utils/rna_single.moab \
+		-l walltime=100000 \
+		-t 1-500 \
+		-v METHOD=$* \
+		-v DATASET=eterna \
+		-v TIMEOUT=86400 \
+		-v EXPERIMENT_GROUP=first_bohb_rerun
+
+## Generate files for validation pipeline on cluster
+validation-files-%:
+	@source activate learna && \
+	python -m utils.configs_to_validation \
+	  --config $* \
+		--config_id "(54, 0, 2)" \
+		--job_id 00000 \
+		--mode learna \
+		--root_dir $(PWD)
 
 
 ################################################################################
