@@ -401,7 +401,9 @@ validation-files:
 		--config_id "(54, 0, 2)" \
 		--job_id 00000 \
 		--mode learna \
-		--root_dir $(PWD)
+		--root_dir $(PWD) \
+		--num_repeats 2 \
+		--num_validations 1
 
 
 ################################################################################
