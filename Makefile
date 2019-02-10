@@ -361,6 +361,28 @@ nemo-test-%:
 		-v EXPERIMENT_GROUP=test_rerun
 
 
+## Start validation for LEARNA-10min on Rfam-Learn-Validation
+nemo-learna-10min-validation-%:
+	msub utils/rna_single.moab
+		-l walltime=600 \
+		-t 1-300 \
+		-v METHOD=$* \
+		-v DATASET=rfam_learn/validation \
+		-v TIMEOUT=180 \
+		-v EXPERIMENT_GROUP=validation_learna-10min
+
+
+## Start validation for LEARNA-30min on Rfam-Learn-Validation
+nemo-learna-30min-validation-%:
+	msub utils/rna_single.moab
+		-l walltime=600 \
+		-t 1-300 \
+		-v METHOD=$* \
+		-v DATASET=rfam_learn/validation \
+		-v TIMEOUT=180 \
+		-v EXPERIMENT_GROUP=validation_learna-30min
+
+
 ## Start experiment on Rfam-Learn benchmark
 nemo-rfam-learn-test-%:
 	msub utils/rna_single.moab \
