@@ -16,8 +16,9 @@ def generate_execution_script(config_id, config, job_id, output_dir, mode, resto
 
         _write_config(config, execution_script)
 
-        execution_script.write('  --target_structure_path $TARGET_STRUCTURE_PATH \\\n')
-        if mode == 'meta_learna' or 'meta_learna_adapt':
+        execution_script.write('  --target_structure_path $TARGET_STRUCTURE_PATH')
+        if mode == 'meta_learna' or mode == 'meta_learna_adapt':
+            execution_script.write('\\\n')
             execution_script.write(f"  --restore_path {restore_path.resolve()} ")
             if mode == 'meta_learna':
                 execution_script.write('\\\n')
