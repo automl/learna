@@ -17,3 +17,6 @@ data/eterna/raw/*.txt
 
 # examples
 results/
+
+# analysis
+data/analysis
