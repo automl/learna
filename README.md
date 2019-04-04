@@ -46,7 +46,7 @@ url={https://openreview.net/forum?id=ByfyHh05tQ},
 
 # Installation
 
-#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. We also provide commands for removing all installed components (see Utilities). However, if you do not want to use our provided pipeline, make sure your system satisfies the following requirements before running the provided scripts.
+#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. We also provide commands for removing all installed components (see Utilities). However, if you do not want to use our installation pipeline for any reasons, make sure your system satisfies the following requirements before running the provided scripts.
 
 &nbsp;   
 
