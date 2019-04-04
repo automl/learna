@@ -13,7 +13,7 @@ In this repository we provide our implementation and data for reproducing the re
 In particular, we provide source code to run:
 
 #### *LEARNA*:
-A ready to use deep reinforcement learning implementation for RNA Design, using PPO [[Schulman et al., 2017]](https://arxiv.org/abs/1707.06347) to learn a policy for solving individual RNA Design problems in an end-to-end fashion from scratch.
+A ready to use deep reinforcement learning implementation for RNA Design. Utilizing PPO [[Schulman et al., 2017]](https://arxiv.org/abs/1707.06347), the agent learns a policy for solving individual RNA Design problems in an end-to-end fashion from scratch.
 
 #### *Meta-LEARNA*:
 A meta-learning approach for RNA Design utilizing a single policy, pre-trained across thousands of different RNA design tasks, capable of solving new RNA Design tasks by transfering the learned knowledge.
@@ -86,7 +86,7 @@ We tested the installation on the following operating systems:
 
 ## Datasets
 
-To download and build the datasets we report results on in our publication, namely the Eterna100 [[Anderson-Lee et al., 2016]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/pdf/nihms747287.pdf) dataset, the Rfam-Taneda [[Taneda, 2011]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/pdf/aabc-4-001.pdf) dataset and our three proposed datasets, Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test, run the following command after installation of all requirements.
+To download and build the datasets we report on in our publications, namely the Eterna100 [[Anderson-Lee et al., 2016]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/pdf/nihms747287.pdf) dataset, the Rfam-Taneda [[Taneda, 2011]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/pdf/aabc-4-001.pdf) dataset and our three proposed datasets, Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test, run the following command after installation of all requirements.
 
 ```
 make data
@@ -102,7 +102,7 @@ For testing your installation run `make experiment-test`. This will execute *LEA
 
 # Usage
 
-#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not include the conda setup during installation, we recommend having a look into the `Makefile` to find the specific function calls needed. 
+#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not follow our installation guide, we recommend having a look into the `Makefile` to find the specific function calls. 
 
 &nbsp;   
 
@@ -111,6 +111,7 @@ To see a list of all `make` targets with short explanation, type
 ```
 make show-help
 ```
+
 &nbsp;  
 
 ## Reproduce Results
