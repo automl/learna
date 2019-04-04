@@ -240,6 +240,7 @@ class LearnaWorker(Worker):
                 min_state_radius
                 + (max_state_radius - min_state_radius) * config["state_radius_relative"]
             )
+        del config["state_radius_relative"]
 
         config["restart_timeout"] = None
 
