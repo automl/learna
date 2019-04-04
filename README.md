@@ -3,7 +3,7 @@ End-to-end RNA Design using deep reinforcement learning
  
 ---
 
-In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design. Our work was published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/) and at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/). The papers are accessible via the following links
+In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design. Our work was published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/) and at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/). The papers are available via the following links
 
 * ICLR 2019 paper: ["Learning to Design RNA"](https://openreview.net/pdf?id=ByfyHh05tQ)
 * MetaLearn2018 paper: ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
@@ -14,20 +14,20 @@ In particular, we provide source code to run:
 A ready to use deep reinforcement learning implementation for RNA Design, using PPO [[Schulman et al., 2017]](https://arxiv.org/abs/1707.06347) to learn a policy for solving individual RNA Design problems in an end-to-end fashion from scratch.
 
 #### *Meta-LEARNA*:
-A meta-learning approach for RNA Design utilizing a single policy, pre-trained across thousands of different RNA design problems, capable of solving new RNA Design problems by transfering the learned knowledge across different tasks.
+A meta-learning approach for RNA Design utilizing a single policy, pre-trained across thousands of different RNA design tasks, capable of solving new RNA Design tasks by transfering the learned knowledge.
 
 #### *Meta-LEARNA-Adapt*:
 A deep reinforcement learning approach combining the strategies of *LEARNA* and *Meta-LEARNA* by warmstarting *LEARNA* using the policy of *Meta-LEARNA* for initialization of the weights and continuing learning the policy on new RNA Design problems.
 
-We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a/falkner18a.pdf) used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
+We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a/falkner18a.pdf) that we used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
 
-All source code can be found in the `src` directory. The code of *LEARNA*, *Meta-LEARNA* and *Meta-LEARNA-Adapt* can be found in `src/learna/`. All code needed to run BOHB is accessible at `src/optimization/`.
+All source code can be found in the `src` directory. The code of *LEARNA*, *Meta-LEARNA* and *Meta-LEARNA-Adapt* can be found in `src/learna/`. All code for running BOHB is accessible at `src/optimization/`.
 
 ---
 
 &nbsp;  
 
-# Cite Learning to Design RNA
+# Citing Learning to Design RNA
 To cite our work, please reference our ICLR 2019 paper
 ```
 @inproceedings{
@@ -46,7 +46,7 @@ url={https://openreview.net/forum?id=ByfyHh05tQ},
 
 # Installation
 
-#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. If you do not want to use this pipeline, make sure your system satisfies the following requirements before running the provided scripts.
+#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. We also provide commands for removing all installed components (see Utilities). However, if you do not want to use our provided pipeline, make sure your system satisfies the following requirements before running the provided scripts.
 
 &nbsp;   
 
