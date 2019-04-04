@@ -99,14 +99,13 @@ experiment-test:
   --conv_size 0 7 \
   --conv_channels 22 22 \
   --embedding_size 0 \
-  --entropy_regularization 0.00010469282668627605 \
   --fc_units 34 \
   --learning_rate 0.00015149356071984718 \
   --lstm_units 36 \
   --num_fc_layers 1 \
   --num_lstm_layers 0 \
   --reward_exponent 4.486673165414606 \
-  --state_radius 2 \
+  --state_radius 5 \
 	--restart_timeout 1800 \
 	--target_structure_path data/eterna/2.rna \
 	--timeout 30
@@ -119,7 +118,7 @@ timed-execution-example-%:
 		--data_dir data/ \
 		--results_dir results/ \
 		--experiment_group timed_execution_example \
-		--method LEARNA-30min \
+		--method LEARNA-30min-MetaLearn2018 \
 		--dataset eterna \
 		--task_id $*
 
