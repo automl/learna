@@ -93,8 +93,21 @@ make data
 ```
 
 This will download all files and save them into the `data/` directory.
+Additionally, individual datasets can be downloaded and build via the following commands
 
-For testing your installation run `make experiment-test`. This will execute *LEARNA* on a single secondary structure of the Eterna100 dataset for 30 seconds.
+```
+make data-eterna
+make data-rfam-taneda
+make data-rfam-learn
+```
+
+For testing your installation run 
+
+```
+make experiment-test
+```
+
+This will execute *LEARNA* on a single secondary structure of the Eterna100 dataset for 30 seconds.
 
 ---
 
@@ -107,6 +120,10 @@ For testing your installation run `make experiment-test`. This will execute *LEA
 &nbsp;   
 
 ## Utilities
+All installed components, including the conda environment, can be removed via
+```
+make clean
+```
 To see a list of all `make` targets with short explanation, type
 ```
 make show-help
