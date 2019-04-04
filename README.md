@@ -1,7 +1,7 @@
 # **Learning to Design RNA**
 End-to-end RNA Design using deep reinforcement learning
-
-&nbsp;  
+ 
+---
 
 In this repository we provide our implementation and data for reproducing the results of our paper ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf) published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/).
 
