@@ -5,8 +5,12 @@ End-to-end RNA Design using deep reinforcement learning
 
 In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design, published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/) and at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/). The papers are available via the following links
 
+&nbsp;  
+
 * ICLR 2019 paper: ["Learning to Design RNA"](https://openreview.net/pdf?id=ByfyHh05tQ)
 * MetaLearn2018 paper: ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
+
+&nbsp;  
 
 In particular, we provide source code to run:
 
@@ -18,6 +22,8 @@ A meta-learning approach for RNA Design utilizing a single policy, pre-trained a
 
 #### *Meta-LEARNA-Adapt*:
 A deep reinforcement learning approach combining the strategies of *LEARNA* and *Meta-LEARNA* by warmstarting *LEARNA* using the policy of *Meta-LEARNA* for initialization of the weights and continuing learning the policy on new RNA Design problems.
+
+&nbsp;  
 
 We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a/falkner18a.pdf) that we used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
 
