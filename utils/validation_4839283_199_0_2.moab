@@ -1,0 +1,58 @@
+#!/bin/bash
+#MSUB -N rna_validation
+#MSUB -E
+#MSUB -e logs/${MOAB_JOBID}.e
+#MSUB -o logs/${MOAB_JOBID}.o
+#MSUB -l nodes=1:ppn=20
+#MSUB -l walltime=1:00:00:00
+#MSUB -l pmem=5gb
+#MSUB -t 1-10
+
+mkdir $TMPDIR/${MOAB_JOBID}
+mkdir $TMPDIR/models
+tar -xzvf /work/ws/nemo/fr_ds371-learna-0/data/rfam_learn.tar.gz -C $TMPDIR/${MOAB_JOBID}
+
+cd /home/fr/fr_fr/fr_tr24/learna_new_codebase
+WORKSPACE=$(cat utils/workspace.txt)
+DATA_DIR="$TMPDIR/${MOAB_JOBID}"
+RESULTS_DIR="${WORKSPACE}/results"
+MODEL_DIR="${WORKSPACE}/models"
+
+source /home/fr/fr_fr/fr_tr24/learna_new_codebase/thirdparty/miniconda/miniconda/bin/activate learna
+python -m src.learna.learn_to_design_rna \
+  --data_dir ${DATA_DIR} \
+  --dataset rfam_learn/train \
+  --save_path ${MODEL_DIR}/validation/4839283_199_0_2/${MOAB_JOBARRAYINDEX}/ \
+  --timeout 3600 \
+  --worker_count 20 \
+  --mutation_threshold 5 \
+  --batch_size 79 \
+  --conv_sizes 17 7 \
+  --conv_channels 24 17 \
+  --embedding_size 3 \
+  --entropy_regularization 0.00015866951832261997 \
+  --fc_units 32 \
+  --learning_rate 8.932022853717019e-05 \
+  --lstm_units 1 \
+  --num_fc_layers 1 \
+  --num_lstm_layers 0 \
+  --reward_exponent 9.253026126541213 \
+  --mutation_threshold 5 \
+  --state_radius 32 \
+
+python -m utils.generate_execution_script --config_id 199_0_2 --config "{'batch_size': 79, 'conv_channels1': 24, 'conv_channels2': 17, 'embedding_size': 3, 'entropy_regularization': 0.00015866951832261997, 'fc_units': 32, 'learning_rate': 8.932022853717019e-05, 'lstm_units': 1, 'num_fc_layers': 1, 'num_lstm_layers': 0, 'reward_exponent': 9.253026126541213, 'mutation_threshold': 5, 'conv_size1': 17, 'conv_size2': 7, 'state_radius': 32}" --job_id validation_${MOAB_JOBARRAYINDEX}_4839283 --mode meta_learna --output_dir /home/fr/fr_fr/fr_tr24/learna_new_codebase/utils --restore_path ${MODEL_DIR}/validation/4839283_199_0_2/${MOAB_JOBARRAYINDEX}/
+chmod a+rwx /home/fr/fr_fr/fr_tr24/learna_new_codebase/utils/execution_scripts/validation_${MOAB_JOBARRAYINDEX}_4839283_199_0_2.sh
+
+i=1; while [[ i -le 300 ]];
+do \
+$(python utils/timed_execution.py \
+  --timeout 180 \
+  --data_dir $TMPDIR/${MOAB_JOBID} \
+  --results_dir $RESULTS_DIR \
+  --experiment_group validation_iclr \
+  --method validation_${MOAB_JOBARRAYINDEX}_4839283_199_0_2\
+  --dataset rfam_learn/validation \
+  --task_id $i);
+let i=$i+1; done
+
+cp -r ${MODEL_DIR}/validation/4839283_199_0_2/${MOAB_JOBARRAYINDEX}/ /home/fr/fr_fr/fr_tr24/learna_new_codebase/models/validation_${MOAB_JOBARRAYINDEX}_4839283_199_0_2
