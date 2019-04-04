@@ -3,7 +3,10 @@ End-to-end RNA Design using deep reinforcement learning
  
 ---
 
-In this repository we provide our implementation and data for reproducing the results of our paper ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf) published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/).
+In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design. Our work was published at the [Workshop on Meta-Learning (MetaLearn 2018) @NIPS 2018](http://metalearning.ml/2018/) and at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/). The papers are accessible via the following links
+
+* ICLR 2019 paper: ["Learning to Design RNA"](https://openreview.net/pdf?id=ByfyHh05tQ)
+* MetaLearn2018 paper: ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
 
 In particular, we provide source code to run:
 
@@ -23,6 +26,23 @@ All source code can be found in the `src` directory. The code of *LEARNA*, *Meta
 ---
 
 &nbsp;  
+
+# Cite Learning to Design RNA
+To cite our work, please reference our ICLR 2019 paper
+```
+@inproceedings{
+runge2018learning,
+title={Learning to Design {RNA}},
+author={Frederic Runge and Danny Stoll and Stefan Falkner and Frank Hutter},
+booktitle={International Conference on Learning Representations},
+year={2019},
+url={https://openreview.net/forum?id=ByfyHh05tQ},
+}
+```
+---
+
+&nbsp;  
+
 
 # Installation
 
