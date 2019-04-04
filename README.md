@@ -8,8 +8,6 @@ In this repository we provide our implementation and data for reproducing the re
 * ["Learning to Design RNA" @ ICLR 2019](https://openreview.net/pdf?id=ByfyHh05tQ)
 * ["Learning to Design RNA" @ MetaLearn 2018](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
 
-&nbsp;  
-
 In particular, we provide source code to run:
 
 #### *LEARNA*:
