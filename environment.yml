@@ -19,4 +19,3 @@ dependencies:
     - Distance
     - tensorforce==0.3.3
     - dataclasses
-    - hpbandster
