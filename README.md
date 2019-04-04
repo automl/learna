@@ -8,7 +8,7 @@ In this repository we provide our implementation and data for reproducing the re
 &nbsp;  
 
 * ICLR 2019 paper: ["Learning to Design RNA"](https://openreview.net/pdf?id=ByfyHh05tQ)
-* MetaLearn2018 paper: ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
+* MetaLearn 2018 paper: ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
 
 &nbsp;  
 
