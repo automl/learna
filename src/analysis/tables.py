@@ -115,7 +115,9 @@ class _DatasetResults(object):
 
     @property
     def solved_instances(self):
-        return self._solved_instances.T
+        df = self._solved_instances.T
+        df.loc["Total"] = df.sum()
+        return df
 
 
 class _MethodResults(object):
@@ -149,12 +151,16 @@ class _MethodResults(object):
 
     def _read_solved_instances(self, data_path):
         _solved_instances = {}
+
         with open(data_path.joinpath("runs_solve_instance.tsv")) as _instances:
             lines = _instances.readlines()
             for line in lines:
                 if line.split()[0] == "id":
                     continue
-                _solved_instances[int(line.split()[0])] = int(line.split()[1])
+                _solved_instances[int(line.split()[0])] = (
+                    str(int(line.split()[1]))
+                    + f"/{number_of_evaluations[data_path.parent.stem]}"
+                )
         self._solved_instances = pd.DataFrame(
             _solved_instances,
             index=[self._method_name],
@@ -168,12 +174,23 @@ class _MethodResults(object):
             for line in lines:
                 if line.split()[0] == "time":
                     continue
-                _time_limits[f"{int(line.split()[0])} s"] = int(line.split()[1])
+                _time_limits[f"{int(line.split()[0])} s"] = int(
+                    round(
+                        (int(line.split()[1]) / sequence_count[data_path.parent.stem])
+                        * 100
+                    )
+                )
         self._time_limits = pd.DataFrame(_time_limits, index=[self._method_name])
 
     @property
     def run_quantiles(self):
-        return self._run_quantiles.sort_index(axis=0)
+        return self._run_quantiles.reindex_axis(
+            sorted(
+                self._run_quantiles.columns,
+                key=lambda x: int(x.split()[0]) if x.split()[0] != "Total" else -1,
+            ),
+            axis=1,
+        )
 
     @property
     def solved_instances(self):
@@ -185,7 +202,9 @@ class _MethodResults(object):
 
     @property
     def time_limits(self):
-        return self._time_limits.sort_index(axis=0)
+        return self._time_limits.reindex_axis(
+            sorted(self._time_limits.columns, key=lambda x: int(x.split()[0])), axis=1
+        )
 
 
 if __name__ == "__main__":
@@ -206,6 +225,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    results = ExperimentGroupResults(args.experiment_group, args.results_dir)
-
+    results = ExperimentGroupResults(
+        args.experiment_group.resolve(), args.results_dir.resolve()
+    )
     results.to_latex(column_format=args.column_format, compile_ready=args.compile_ready)
