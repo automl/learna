@@ -87,7 +87,6 @@ def _encode_pairing(secondary):
     return pairing_encoding
 
 
-
 class _Target(object):
     """TODO
     Class of the target structure. Provides encodings and id.
