@@ -17,5 +17,5 @@ source thirdparty/miniconda/miniconda/bin/activate learna
   --conv_size 5 7 \
   --state_radius 26 \
   --target_structure_path $TARGET_STRUCTURE_PATH \
-  --restore_path models/trained_models/54_0_2 \
+  --restore_path models/MetaLearn_2018/54_0_2 \
   --stop_learning
