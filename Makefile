@@ -95,19 +95,20 @@ experiment-test:
 	@source activate learna && \
 	python -m src.learna.design_rna \
 	--mutation_threshold 5 \
-  --batch_size 78 \
-  --conv_size 0 7 \
-  --conv_channels 22 22 \
-  --embedding_size 0 \
-  --fc_units 34 \
-  --learning_rate 0.00015149356071984718 \
-  --lstm_units 36 \
+  --batch_size 126 \
+  --conv_sizes 17 5 \
+  --conv_channels 7 18 \
+  --embedding_size 3 \
+  --entropy_regularization 6.762991409135427e-05 \
+  --fc_units 57 \
+  --learning_rate 0.0005991629320464973 \
+  --lstm_units 28 \
   --num_fc_layers 1 \
-  --num_lstm_layers 0 \
-  --reward_exponent 4.486673165414606 \
-  --state_radius 5 \
-	--restart_timeout 1800 \
-	--target_structure_path data/eterna/2.rna \
+  --num_lstm_layers 1 \
+  --reward_exponent 9.33503385734547 \
+  --state_radius 32 \
+  --restart_timeout 1800 \
+  --target_structure_path data/eterna/2.rna \
 	--timeout 30
 
 ## Example call for timed execution
@@ -118,7 +119,7 @@ timed-execution-example-%:
 		--data_dir data/ \
 		--results_dir results/ \
 		--experiment_group timed_execution_example \
-		--method LEARNA-30min-MetaLearn2018 \
+		--method LEARNA \
 		--dataset eterna \
 		--task_id $*
 
