@@ -1260,7 +1260,9 @@ def test_RnaDesignEnvironment_get_reward():
 
     # Mutate primary sequence to change secondary structure
     # NOTE: Hamming distance is larger than mutation_threshold (5), no local improvement is applied
-    mutated = environment.design.get_mutated("AAAAAAAAAA", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    mutated = environment.design.get_mutated(
+        tuple(list("AAAAAAAAAA")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    )
     assert "AAAAAAAAAA" == mutated.primary
     assert ".........." == fold(mutated.primary)[0]
     hamming_distance = hamming(environment.target.dot_bracket, fold(mutated.primary)[0])
@@ -1282,7 +1284,9 @@ def test_RnaDesignEnvironment_get_reward():
 
     # Mutate primary sequence to change secondary structure
     # NOTE: Hamming distance is smaller than mutation_threshold (5), local improvement is applied
-    mutated = environment.design.get_mutated("GGCCUAUGCG", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    mutated = environment.design.get_mutated(
+        tuple(list("GGCCUAUGCG")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    )
     assert "GGCCUAUGCG" == mutated.primary
     assert ".((....))." == fold(mutated.primary)[0]
     hamming_distance = hamming(environment.target.dot_bracket, fold(mutated.primary)[0])
