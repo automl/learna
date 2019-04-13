@@ -3,10 +3,9 @@ End-to-end RNA Design using deep reinforcement learning
  
 ---
 
-In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design, published at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/) and at the [Workshop on Meta-Learning (MetaLearn 2018) @NeurIPS 2018](http://metalearning.ml/2018/). The papers are available via the following links
+In this repository we provide our implementation and data for reproducing the results of our deep reinforcement learning based approach for RNA Design, published at the [Seventh International Conference on Learning Representations (ICLR 2019)](https://iclr.cc/). The paper is available via the following link
 
 * ["Learning to Design RNA" @ ICLR 2019](https://openreview.net/pdf?id=ByfyHh05tQ)
-* ["Learning to Design RNA" @ MetaLearn 2018](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf)
 
 In particular, we provide source code to run:
 
