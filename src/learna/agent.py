@@ -24,7 +24,7 @@ class NetworkConfig:
     lstm_units: int = 1
     num_lstm_layers: int = 0
     fc_units: int = 2
-    fc_activation: str = "tanh"
+    fc_activation: str = "relu"
     num_fc_layers: int = 2
     embedding_size: int = 0
 
@@ -105,8 +105,7 @@ class AgentConfig:
 
     learning_rate: float = 5e-4
     batch_size: int = 5
-    optimization_steps: int = 10
-    likelihood_ratio_clipping: float = 0.2
+    likelihood_ratio_clipping: float = 0.3
     entropy_regularization: float = 1.5e-3
     random_agent: bool = False
 
@@ -135,7 +134,7 @@ def ppo_agent_kwargs(agent_config, session_config):
         batch_size=agent_config.batch_size,
         keep_last_timestep=True,
         step_optimizer=step_optimizer,
-        optimization_steps=agent_config.optimization_steps,
+        optimization_steps=1,
         likelihood_ratio_clipping=agent_config.likelihood_ratio_clipping,
         entropy_regularization=agent_config.entropy_regularization,
         variable_noise=None,
