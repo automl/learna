@@ -1,0 +1,159 @@
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{packages/utils}[]
+% ________________________________________________________________________________________
+% Packages
+% ________________________________________________________________________________________
+
+
+% ============ FH: BEGIN Markup Commands ============
+\usepackage[textsize=small]{todonotes}
+\newcommand{\note}[1]
+%  {\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue]{#1}}
+  {\todo[inline]{#1}}
+%\renewcommand{\note}[1]{}
+% ============ FH: END Markup Commands ============
+
+% ============ FH: START Other Commands ============
+\usepackage{amsthm}
+\newtheorem{mydef}{Definition}
+% ============ FH: END Other Commands ============
+
+
+% Meta
+\RequirePackage[subpreambles=false]{standalone}
+\RequirePackage{import}
+
+% Encoding and language
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[english]{babel}
+
+% Font
+\RequirePackage{times}
+
+% Math
+\RequirePackage{mathtools}
+\RequirePackage{amssymb}
+\RequirePackage{xfrac}
+
+
+% Formatting
+\RequirePackage{dirtytalk}  % Use \say{} for quotes
+\RequirePackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
+\microtypecontext{spacing=nonfrench}
+
+\RequirePackage{multirow}
+\RequirePackage{siunitx}
+
+
+% Structures
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{subcaption}
+\RequirePackage{float}
+
+% Links
+\RequirePackage{url}
+\RequirePackage{hyperref}
+
+
+% Tikz
+\RequirePackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.markings}
+
+\RequirePackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\pgfplotsset{compat=1.13}
+
+% Pseudocode
+\RequirePackage[ruled, vlined, linesnumbered]{algorithm2e}
+
+
+% ________________________________________________________________________________________
+% Commands
+% ________________________________________________________________________________________
+
+\newcommand{\outline}[1]{{\color{red} #1 \hfill}}
+
+\newcommand{\discussion}[1]{\hfill \break
+\framebox{
+\begin{minipage}{0.9\linewidth}
+\color{blue}{#1}
+\end{minipage}
+}}
+
+%\newcommand{\todo}[1]{\textcolor{magenta}{#1}}
+
+\newcommand{\eg}{\textit{e}.\textit{g}., }
+
+\newcommand{\reftext}[2]{\hyperref[#1]{#2~\ref{#1}}}
+\newcommand{\reftable}[1]{\reftext{#1}{Table}}
+\newcommand{\refsection}[1]{\reftext{#1}{Section}}
+\newcommand{\reffigure}[1]{\reftext{#1}{Figure}}
+\newcommand{\refequation}[1]{\reftext{#1}{Equation}}
+\newcommand{\refappendix}[1]{\reftext{#1}{Appendix}}
+
+
+% ________________________________________________________________________________________
+
+\makeatletter
+\newcommand*\wt[1]{\mathpalette\wthelper{#1}}
+\newcommand*\wthelper[2]{%
+        \hbox{\dimen@\accentfontxheight#1%
+                \accentfontxheight#11.3\dimen@
+                $\m@th#1\widetilde{#2}$%
+                \accentfontxheight#1\dimen@
+        }%
+}
+
+\newcommand*\accentfontxheight[1]{%
+        \fontdimen5\ifx#1\displaystyle
+                \textfont
+        \else\ifx#1\textstyle
+                \textfont
+        \else\ifx#1\scriptstyle
+                \scriptfont
+        \else
+                \scriptscriptfont
+        \fi\fi\fi3
+}
+\makeatother
+
+
+
+\DeclareMathOperator{\foldzucker}{fold_{Zuker}}
+\DeclareMathOperator{\foldf}{\mathcal{F}}
+\DeclareMathOperator{\hamming}{d_H}
+\DeclareMathOperator{\hammingnorm}{\wt{d}_H}
+
+% ________________________________________________________________________________________
+% Takes seven arguments:
+% 1) data table name
+% 2) time
+% 3) mean
+% 4) lower column
+% 5) upper column
+% 6) color
+% 7) error bar opacity.
+\newcommand{\errorband}[7]{
+\pgfplotstableread{#1}\datatable
+  \addplot [const plot, name path=upper,draw=none,no markers,forget plot]
+    table [x={#2},y={#5}] {\datatable};
+
+  \addplot [const plot, name path=lower,draw=none,no markers,forget plot]
+    table [x={#2},y={#4}] {\datatable};
+
+  \addplot [const plot, forget plot,fill=#6,opacity=#7]
+    fill between[on layer={},of=upper and lower];
+
+  \addplot [const plot, #6,thick,no markers]
+    table [x={#2},y={#3}] {\datatable};
+}
+% ________________________________________________________________________________________
+
+
+
+
+
+\endinput
