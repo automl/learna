@@ -13,7 +13,7 @@ test:
 	pytest . -p no:warnings
 
 ## To clean project state
-clean: clean-runtime clean-data clean-thirdparty clean-models clean-results
+clean: clean-runtime clean-data clean-thirdparty clean-models clean-results clean-analysis
 
 ## Remove runtime files
 clean-runtime:
@@ -26,24 +26,22 @@ clean-data:
 	rm -rf data/eterna/raw/*.txt
 	rm -rf data/eterna/interim/*.txt
 	rm -rf data/rfam_taneda
-	rm -rf data/rfam_learn
+	rm -rf data/rfam_learn*
 
 ## Remove model examples
 clean-models:
 	rm -rf models/example
 
 ## Clean results directory
-clean-results: clean-bohb clean-timed-execution
-	rm -rf results
+clean-results:
+	rm -rf results/
 
-## Remove all files from timed execution examples
-clean-timed-execution:
-	rm -rf results/timed_execution_example
+clean-plots:
+	rm -rf results/plots
 
-## Remove all bohb-examples
-clean-bohb:
-	rm -rf results/*.pkl
-	rm -rf results/*.json
+## Clean analysis directory
+clean-analysis:
+	rm -rf analysis/reproduce_iclr_2019/
 
 ## Remove thirdparty installs
 clean-thirdparty:
@@ -69,6 +67,11 @@ data-rfam-taneda:
 ## Download and build the Rfam-Learn dataset
 data-rfam-learn:
 	@./src/data/download_and_build_rfam_learn.sh
+	mv data/rfam_learn/test data/rfam_learn_test
+	mv data/rfam_learn/validation data/rfam_learn_validation
+	mv data/rfam_learn/train data/rfam_learn_train
+	rm -rf data/rfam_learn
+
 
 
 ################################################################################
@@ -80,6 +83,10 @@ requirements:
 	./thirdparty/miniconda/make_miniconda.sh
 	conda env create -f environment.yml
 
+setup-texlive-%:
+	@source activate learna && \
+	conda install texlive-$*
+
 
 ################################################################################
 # Test Experiment and Example
@@ -89,117 +96,62 @@ requirements:
 experiment-test:
 	@source activate learna && \
 	python -m src.learna.design_rna \
-	--batch_size 79 \
-	--conv_channels 10 3 \
-	--embedding_size 0 \
-	--entropy_regularization 0.0001628733797899296 \
-	--fc_units 32 \
-	--learning_rate 0.00033766914645516697 \
-	--lstm_units 7 \
-	--num_fc_layers 1 \
-	--num_lstm_layers 2 \
-	--optimization_steps 10 \
-	--reward_exponent 9.437605850994773 \
 	--mutation_threshold 5 \
-	--include_mutation \
-	--conv_sizes 0 3 \
-	--restart_timeout 1800 \
-	--state_radius 2 \
-	--likelihood_ratio_clipping 0.3 \
-	--fc_activation relu \
-	--target_structure_path data/eterna/2.rna \
+  --batch_size 126 \
+  --conv_sizes 17 5 \
+  --conv_channels 7 18 \
+  --embedding_size 3 \
+  --entropy_regularization 6.762991409135427e-05 \
+  --fc_units 57 \
+  --learning_rate 0.0005991629320464973 \
+  --lstm_units 28 \
+  --num_fc_layers 1 \
+  --num_lstm_layers 1 \
+  --reward_exponent 9.33503385734547 \
+  --state_radius 32 \
+  --restart_timeout 1800 \
+  --target_structure_path data/eterna/2.rna \
 	--timeout 30
-
-## Example call for timed execution
-timed-execution-example-%:
-	@source activate learna && \
-	python utils/timed_execution.py \
-		--timeout 30 \
-		--data_dir data/ \
-		--results_dir results/ \
-		--experiment_group timed_execution_example \
-		--method LEARNA-30min \
-		--dataset eterna \
-		--task_id $*
-
 
 ################################################################################
 # Reproduce Results of LEARNA
 ################################################################################
 
-## Reproduce LEARNA-30min on <id> (1-100) of Eterna100
+## Reproduce LEARNA on <id> (1-100) of Eterna100
 reproduce-LEARNA-Eterna-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 79 \
-		--conv_channels 10 3 \
-		--embedding_size 0 \
-		--entropy_regularization 0.0001628733797899296 \
-		--fc_units 32 \
-		--learning_rate 0.00033766914645516697 \
-		--lstm_units 7 \
-		--num_fc_layers 1 \
-		--num_lstm_layers 2 \
-		--optimization_steps 10 \
-		--reward_exponent 9.437605850994773 \
-		--mutation_threshold 5 \
-		--include_mutation \
-		--conv_sizes 0 3 \
-		--restart_timeout 1800 \
-		--state_radius 2 \
-		--likelihood_ratio_clipping 0.3 \
-		--fc_activation relu \
-		--target_structure_path data/eterna/$*.rna \
-		--timeout 86400
+	python utils/timed_execution.py \
+		--timeout 86400 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method LEARNA \
+		--dataset eterna \
+		--task_id $*
 
-## Reproduce LEARNA-10min on <id> (1-29) of Rfam-Taneda
+## Reproduce LEARNA on <id> (1-29) of Rfam-Taneda
 reproduce-LEARNA-Rfam-Taneda-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 32 \
-  	--conv_channels 8 1 \
-  	--embedding_size 0 \
-  	--entropy_regularization 0.00044440579487984737 \
-  	--fc_units 52 \
-  	--learning_rate 0.000548959271057026 \
-  	--lstm_units 4 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 2 \
-  	--optimization_steps 10 \
-  	--reward_exponent 5.724874982958563 \
-  	--mutation_threshold 5 \
-  	--conv_sizes 5 3 \
-  	--state_radius 16 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--include_mutation \
-  	--fc_activation relu \
-  	--target_structure_path data/rfam_taneda/$*.rna \
-		--timeout 600
+	python utils/timed_execution.py \
+		--timeout 600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method LEARNA \
+		--dataset rfam_taneda \
+		--task_id $*
 
 ## Reproduce LEARNA-30min on <id> (1-100) of Rfam-Learn-Test
 reproduce-LEARNA-Rfam-Learn-Test-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 79 \
-		--conv_channels 10 3 \
-		--embedding_size 0 \
-		--entropy_regularization 0.0001628733797899296 \
-		--fc_units 32 \
-		--learning_rate 0.00033766914645516697 \
-		--lstm_units 7 \
-		--num_fc_layers 1 \
-		--num_lstm_layers 2 \
-		--optimization_steps 10 \
-		--reward_exponent 9.437605850994773 \
-		--mutation_threshold 5 \
-		--include_mutation \
-		--conv_sizes 0 3 \
-		--restart_timeout 1800 \
-		--state_radius 2 \
-		--likelihood_ratio_clipping 0.3 \
-		--fc_activation relu \
-  	--target_structure_path data/rfam_learn/test/$*.rna \
-		--timeout 3600
+	python utils/timed_execution.py \
+		--timeout 3600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method LEARNA \
+		--dataset rfam_learn_test \
+		--task_id $*
 
 
 ################################################################################
@@ -209,81 +161,38 @@ reproduce-LEARNA-Rfam-Learn-Test-%:
 ## Reproduce Meta-LEARNA on <id> (1-100) of Eterna100
 reproduce-Meta-LEARNA-Eterna-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/eterna/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 86400 \
-		--stop_learning
+	python utils/timed_execution.py \
+		--timeout 86400 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA \
+		--dataset eterna \
+		--task_id $*
 
 ## Reproduce Meta-LEARNA on <id> (1-29) of Rfam-Taneda
 reproduce-Meta-LEARNA-Rfam-Taneda-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/rfam_taneda/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 600 \
-		--stop_learning
+	python utils/timed_execution.py \
+		--timeout 600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA \
+		--dataset rfam_taneda \
+		--task_id $*
 
 ## Reproduce Meta-LEARNA on <id> (1-100) of Rfam-Learn-Test
 reproduce-Meta-LEARNA-Rfam-Learn-Test-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/rfam_learn/test/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 3600 \
-		--stop_learning
-
+	python utils/timed_execution.py \
+		--timeout 3600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA \
+		--dataset rfam_learn_test \
+		--task_id $*
 
 ################################################################################
 # Reproduce Results of Meta-LEARNA-Adapt
@@ -292,78 +201,36 @@ reproduce-Meta-LEARNA-Rfam-Learn-Test-%:
 ## Reproduce Meta-LEARNA-Adapt on <id> (1-100) of Eterna100
 reproduce-Meta-LEARNA-Adapt-Eterna-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/eterna/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 86400
-
+	python utils/timed_execution.py \
+		--timeout 86400 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA-Adapt \
+		--dataset eterna \
+		--task_id $*
 ## Reproduce Meta-LEARNA-Adapt on <id> (1-29) of Rfam-Taneda
 reproduce-Meta-LEARNA-Adapt-Rfam-Taneda-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/rfam_taneda/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 600
-
+	python utils/timed_execution.py \
+		--timeout 600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA-Adapt \
+		--dataset rfam_taneda \
+		--task_id $*
 ## Reproduce Meta-LEARNA-Adapt on <id> (1-100) of Rfam-Learn-Test
 reproduce-Meta-LEARNA-Adapt-Rfam-Learn-Test-%:
 	@source activate learna && \
-	python -m src.learna.design_rna \
-		--batch_size 80 \
-  	--conv_channels 32 14 \
-  	--embedding_size 1 \
-  	--entropy_regularization 0.000198389753598839 \
-  	--fc_units 9 \
-  	--learning_rate 6.374026866356635e-05 \
-  	--lstm_units 53 \
-  	--num_fc_layers 1 \
-  	--num_lstm_layers 0 \
-  	--optimization_steps 10 \
-  	--reward_exponent 9.224721807238447 \
-  	--mutation_threshold 5 \
-  	--include_mutation \
-  	--conv_size 5 7 \
-  	--state_radius 26 \
-  	--likelihood_ratio_clipping 0.3 \
-  	--fc_activation relu \
-  	--target_structure_path data/rfam_learn/test/$*.rna \
-  	--restore_path models/trained_models/54_0_2 \
-  	--timeout 3600
-
+	python utils/timed_execution.py \
+		--timeout 3600 \
+		--data_dir data/ \
+		--results_dir results/ \
+		--experiment_group reproduce_iclr_2019 \
+		--method Meta-LEARNA-Adapt \
+		--dataset rfam_learn_test \
+		--task_id $*
 
 ################################################################################
 # Joint Architecture and Hyperparameter Search
@@ -381,7 +248,26 @@ bohb-example:
 		--data_dir data \
 		--nic_name lo \
 		--shared_directory results/ \
-		--mode DesignRNA-rfam
+		--mode learna
+
+################################################################################
+# Analysis and Visualization
+################################################################################
+
+## Analyse experiment group %
+analyse:
+	@source activate learna && \
+	python -m src.analyse.analyse_experiment_group --experiment_group results/reproduce_iclr_2019 --analysis_dir analysis/reproduce_iclr_2019 --root_sequences_dir data --ci_alpha 0.05
+
+## Plot reproduced results using pgfplots
+plots:
+	rm -rf results/plots/
+	@source activate learna && \
+	pdflatex -synctex=1 -interaction=nonstopmode -shell-escape results/plots.tex
+	mkdir -p results/plots/
+	mv pgfplots.pdf results/plots/
+	rm -f pgfplots*
+
 
 
 ################################################################################
