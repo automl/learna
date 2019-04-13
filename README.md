@@ -1,32 +1,49 @@
 # **Learning to Design RNA**
-End-to-end RNA Design using deep reinforcement learning
 
-&nbsp;  
+In this repository we provide the code accompanying our publication
 
-In this repository we provide our implementation and data for reproducing the results of our paper ["Learning to Design RNA"](http://metalearning.ml/2018/papers/metalearn2018_paper74.pdf) published at the [Workshop on Meta-Learning (MetaLearn 2018) @NeurIPS 2018](http://metalearning.ml/2018/).
+> [Learning to Design RNA](https://openreview.net/pdf?id=ByfyHh05tQ)  
+> Frederic Runge, Danny Stoll, Stefan Falkner, Frank Hutter  
+> In *Proceedings of the International Conference on Learning Representations (ICLR 2019)*, 2019.
 
-In particular, we provide source code to run:
+![](action_rollout_with_timesteps_and_actions_cand_sol_crop.gif)
+***Figure 1:** Illustration of an action rollout. The agent sequentially builds a candidate solution by choosing actions to place nucleotides. At paired sites, as indicated by a pair of brackets, two nucleotides are placed simultaneously (t = 0 and t = 1); while at unpaired sites a single nucleotide is placed.*
+
+In our algorithm, we employ deep reinforcement learning to yield agents, capable of designing RNA sequences that satisfy given structural constraints in an end-to-end fashion. In particular, we provide source code to run:
 
 #### *LEARNA*:
-A ready to use deep reinforcement learning implementation for RNA Design, using PPO [[Schulman et al., 2017]](https://arxiv.org/abs/1707.06347) to learn a policy for solving individual RNA Design problems in an end-to-end fashion from scratch.
+A ready to use deep reinforcement learning implementation for RNA Design. Utilizing PPO [[Schulman et al., 2017]](https://arxiv.org/abs/1707.06347), the agent learns a policy for solving individual RNA Design problems in an end-to-end fashion from scratch.
 
 #### *Meta-LEARNA*:
-A meta-learning approach for RNA Design utilizing a single policy, pre-trained across thousands of different RNA design problems, capable of solving new RNA Design problems by transfering the learned knowledge across different tasks.
+A meta-learning approach for RNA Design utilizing a single policy, pre-trained across thousands of different RNA design tasks, capable of solving new RNA Design tasks by transfering the learned knowledge.
 
 #### *Meta-LEARNA-Adapt*:
 A deep reinforcement learning approach combining the strategies of *LEARNA* and *Meta-LEARNA* by warmstarting *LEARNA* using the policy of *Meta-LEARNA* for initialization of the weights and continuing learning the policy on new RNA Design problems.
-
-We further provide our implemetation of workers for BOHB [[Falkner et al., 2018]](http://proceedings.mlr.press/v80/falkner18a/falkner18a.pdf) used to jointly optimize the architecture of the policy network, the training hyperparameters and the state representation. 
-
-All source code can be found in the `src` directory. The code of *LEARNA*, *Meta-LEARNA* and *Meta-LEARNA-Adapt* can be found in `src/learna/`. All code needed to run BOHB is accessible at `src/optimization/`.
 
 ---
 
 &nbsp;  
 
+# Citation
+To cite our work, please reference our ICLR 2019 paper
+```
+@inproceedings{
+runge2018learning,
+title={Learning to Design {RNA}},
+author={Frederic Runge and Danny Stoll and Stefan Falkner and Frank Hutter},
+booktitle={International Conference on Learning Representations},
+year={2019},
+url={https://openreview.net/forum?id=ByfyHh05tQ},
+}
+```
+---
+
+&nbsp;  
+
+
 # Installation
 
-#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. If you do not want to use this pipeline, make sure your system satisfies the following requirements before running the provided scripts.
+#### Note: Our installation pipeline includes an installation of miniconda to setup an environment called `learna` to make installation of all requirements as easy as possible. We also provide commands for removing all installed components (see Utilities). However, if you do not want to use our installation pipeline for any reasons, make sure your system satisfies the following requirements before running the provided scripts.
 
 &nbsp;   
 
@@ -62,15 +79,28 @@ We tested the installation on the following operating systems:
 
 ## Datasets
 
-To download and build the datasets we report results on in our publication, namely the Eterna100 [[Anderson-Lee et al., 2016]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/pdf/nihms747287.pdf) dataset, the Rfam-Taneda [[Taneda, 2011]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/pdf/aabc-4-001.pdf) dataset and our three proposed datasets, Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test, run the following command after installation of all requirements.
+To download and build the datasets we report on in our publications, namely the Eterna100 [[Anderson-Lee et al., 2016]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4833017/pdf/nihms747287.pdf) dataset, the Rfam-Taneda [[Taneda, 2011]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3169953/pdf/aabc-4-001.pdf) dataset and our three proposed datasets, Rfam-Learn-Train, Rfam-Learn-Validation and Rfam-Learn-Test, run the following command after installation of all requirements.
 
 ```
 make data
 ```
 
 This will download all files and save them into the `data/` directory.
+Additionally, individual datasets can be downloaded and build via the following commands
 
-For testing your installation run `make experiment-test`. This will execute *LEARNA* on a single secondary structure of the Eterna100 dataset for 30 seconds.
+```
+make data-eterna
+make data-rfam-taneda
+make data-rfam-learn
+```
+
+For testing your installation type
+
+```
+make experiment-test
+```
+
+to run *LEARNA* on a single secondary structure of the Eterna100 dataset for 30 seconds.
 
 ---
 
@@ -78,15 +108,20 @@ For testing your installation run `make experiment-test`. This will execute *LEA
 
 # Usage
 
-#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not include the conda setup during installation, we recommend having a look into the `Makefile` to find the specific function calls needed. 
+#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not follow our installation guide, we recommend having a look into our `Makefile` to run the specific commands manually. 
 
 &nbsp;   
 
 ## Utilities
+All installed components, including the conda environment, can be removed via
+```
+make clean
+```
 To see a list of all `make` targets with short explanation, type
 ```
 make show-help
 ```
+
 &nbsp;  
 
 ## Reproduce Results
