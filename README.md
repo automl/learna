@@ -6,7 +6,7 @@ In this repository we provide the code accompanying our publication
 > Frederic Runge, Danny Stoll, Stefan Falkner, Frank Hutter  
 > In *Proceedings of the International Conference on Learning Representations (ICLR 2019)*, 2019.
 
-![](action_rollout_with_timesteps_and_actions_cand_sol_crop.gif)
+![](img/action_rollout.gif)
 ***Figure 1:** Illustration of an action rollout. The agent sequentially builds a candidate solution by choosing actions to place nucleotides. At paired sites, as indicated by a pair of brackets, two nucleotides are placed simultaneously (t = 0 and t = 1); while at unpaired sites a single nucleotide is placed.*
 
 In our algorithm, we employ deep reinforcement learning to yield agents, capable of designing RNA sequences that satisfy given structural constraints in an end-to-end fashion. In particular, we provide source code to run:
@@ -108,7 +108,7 @@ to run *LEARNA* on a single secondary structure of the Eterna100 dataset for 30 
 
 # Usage
 
-#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not follow our installation guide, we recommend having a look into our `Makefile` to run the specific commands manually. 
+#### Note: All following commands using `make` will automatically activate the `learna` conda environment. If you did not follow our installation guide, we recommend having a look into our `Makefile` to run the specific commands manually.
 
 &nbsp;   
 
@@ -150,7 +150,7 @@ make reproduce-Meta-LEARNA-Adapt-<benchmark>-<id>
 &nbsp;  
 
 ### Timed Execution
-To have a standardized timing for all algorithms without using internal timeouts, we decided to limit the runtime using [pynisher](https://github.com/sfalkner/pynisher). We provide our script for timed execution and our execution scripts for running our approaches. 
+To have a standardized timing for all algorithms without using internal timeouts, we decided to limit the runtime using [pynisher](https://github.com/sfalkner/pynisher). We provide our script for timed execution and our execution scripts for running our approaches.
 The following scripts are available in the `utils/` directory:
 
 * `timed_execution.py`: Script for timing control using `pynisher`
@@ -176,7 +176,7 @@ Options:
 * `dataset`: One of `eterna`, `rfam_taneda`, `rfam_learn/test`
 * `task_id`: An id of any target structure of the corresponding dataset
 
-This will call the specified `execution_script` containing one of the finally selected configurations of *LEARNA*, *Meta-LEARNA* or *Meta-LEARNA-Adapt*. The script will run until the `timeout` was reached and is then interrupted using `pynisher`. 
+This will call the specified `execution_script` containing one of the finally selected configurations of *LEARNA*, *Meta-LEARNA* or *Meta-LEARNA-Adapt*. The script will run until the `timeout` was reached and is then interrupted using `pynisher`.
 
 An example call can be executed from the project root via
 ```
@@ -186,7 +186,7 @@ This creates a `results/<experiment_group>/<dataset>/<execution_script>/run-0` d
 
 &nbsp;  
 
-#### Note: The only difference between *Meta-LEARNA* and *Meta-LEARNA-Adapt* is an additional option called `--stop-learning` that needs to be removed in the `exectution_script` for *Meta-LEARNA* `Meta-LEARNA.sh` to run *Meta-LEARNA-Adapt* instead of *Meta-LEARNA*. 
+#### Note: The only difference between *Meta-LEARNA* and *Meta-LEARNA-Adapt* is an additional option called `--stop-learning` that needs to be removed in the `exectution_script` for *Meta-LEARNA* `Meta-LEARNA.sh` to run *Meta-LEARNA-Adapt* instead of *Meta-LEARNA*.
 
 &nbsp;  
 
