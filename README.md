@@ -6,7 +6,7 @@ In this repository we provide the code accompanying our publication
 > Frederic Runge, Danny Stoll, Stefan Falkner, Frank Hutter  
 > In *Proceedings of the International Conference on Learning Representations (ICLR 2019)*, 2019.
 
-![](img/action_rollout.gif)
+![](visualization/img/action_rollout.gif)
 ***Figure 1:** Illustration of an action rollout. The agent sequentially builds a candidate solution by choosing actions to place nucleotides. At paired sites, as indicated by a pair of brackets, two nucleotides are placed simultaneously (t = 0 and t = 1); while at unpaired sites a single nucleotide is placed.*
 
 In our algorithm, we employ deep reinforcement learning to yield agents, capable of designing RNA sequences that satisfy given structural constraints in an end-to-end fashion. In particular, we provide source code to run:
