@@ -83,10 +83,6 @@ requirements:
 	./thirdparty/miniconda/make_miniconda.sh
 	conda env create -f environment.yml
 
-setup-texlive-%:
-	@source activate learna && \
-	conda install texlive-$*
-
 
 ################################################################################
 # Test Experiment and Example
