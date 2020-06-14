@@ -1,10 +1,10 @@
 import multiprocessing
 from pathlib import Path
 
-from .agent import NetworkConfig, get_network, AgentConfig, ppo_agent_kwargs, get_agent
-from .environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
+from learna.learna.agent import NetworkConfig, get_network, AgentConfig, ppo_agent_kwargs, get_agent
+from learna.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
 
-from ..tensorforce.threaded_runner import clone_worker_agent, ThreadedRunner
+from learna.tensorforce.threaded_runner import clone_worker_agent, ThreadedRunner
 
 
 def episode_finished(stats):

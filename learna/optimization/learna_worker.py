@@ -1,38 +1,32 @@
 import os
-import shutil
-import multiprocessing
 
+os.environ["OMP_NUM_THREADS"] = "1"
+# os.environ['KMP_AFFINITY']='compact,1,0'
+
+import multiprocessing
 
 import numpy as np
 import ConfigSpace as CS
 from hpbandster.core.worker import Worker
 
-from src.learna.agent import NetworkConfig, get_network, AgentConfig
-from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
-from src.learna.design_rna import design_rna
-from src.learna.learn_to_design_rna import learn_to_design_rna
-from src.data.parse_dot_brackets import parse_dot_brackets
+
+from learna.learna.agent import NetworkConfig, get_network, AgentConfig
+from learna.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
+from learna.learna.design_rna import design_rna
+from learna.data.parse_dot_brackets import parse_dot_brackets
 
 
-class MetaLearnaWorker(Worker):
-    def __init__(
-        self, data_dir, num_cores, train_sequences, validation_timeout=60, **kwargs
-    ):
+class LearnaWorker(Worker):
+    def __init__(self, data_dir, num_cores, train_sequences, **kwargs):
         super().__init__(**kwargs)
         self.num_cores = num_cores
-        self.validation_timeout = validation_timeout
         self.train_sequences = parse_dot_brackets(
-            dataset="rfam_learn/train",
+            dataset="rfam_learn/validation",
             data_dir=data_dir,
             target_structure_ids=train_sequences,
         )
-        self.validation_sequences = parse_dot_brackets(
-            dataset="rfam_learn/validation",
-            data_dir=data_dir,
-            target_structure_ids=range(1, 101),
-        )
 
-    def compute(self, config, budget, working_directory, config_id, **kwargs):
+    def compute(self, config, budget, **kwargs):
         """
 		Parameters
 		----------
@@ -40,11 +34,6 @@ class MetaLearnaWorker(Worker):
 				cutoff for the agent on a single sequence
 		"""
 
-        tmp_dir = os.path.join(
-            working_directory, "%i_%i_%i" % (config_id[0], config_id[1], config_id[2])
-        )
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        os.makedirs(tmp_dir, exist_ok=True)
         config = self._fill_config(config)
 
         network_config = NetworkConfig(
@@ -67,100 +56,36 @@ class MetaLearnaWorker(Worker):
             reward_exponent=config["reward_exponent"], state_radius=config["state_radius"]
         )
 
-        try:
-
-            train_info = self._train(
-                network_config, agent_config, env_config, tmp_dir, budget
-            )
-            validation_info = self._validate(
-                network_config,
-                agent_config,
-                env_config,
-                tmp_dir,
-                config["restart_timeout"],
-            )
-
-        except:
-            raise
+        validation_info = self._evaluate(
+            budget, config["restart_timeout"], network_config, agent_config, env_config
+        )
 
         return {
             "loss": validation_info["sum_of_min_distances"],
-            "info": {"train_info": train_info, "validation_info": validation_info},
+            "info": {"validation_info": validation_info},
         }
 
-    def _train(self, network_config, agent_config, env_config, tmp_dir, budget):
-
-        # create arguments for all sequences
-        train_arguments = [
-            self.train_sequences,
-            budget,  # timeout
-            self.num_cores,  # worker_count
-            tmp_dir,  # save_path
-            None,  # restore_path
-            network_config,
-            agent_config,
-            env_config,
-        ]
-        # need to run tensoflow in a separate thread otherwise the pool in _evaluate
-        # does not work
-        with multiprocessing.Pool(1) as pool:
-            train_results = pool.apply(learn_to_design_rna, train_arguments)
-
-        train_results = process_train_results(train_results)
-
-        train_sequence_infos = {}
-        train_sum_of_min_distances = 0
-        train_sum_of_last_distances = 0
-        train_num_solved = 0
-
-        for r in train_results.values():
-            sequence_id = r[0].target_id
-            r.sort(key=lambda e: e.time)
-
-            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
-
-            train_sum_of_min_distances += dists.min()
-            train_sum_of_last_distances += dists[-1]
-
-            train_num_solved += dists.min() == 0.0
-
-            train_sequence_infos[sequence_id] = {
-                "num_episodes": len(r),
-                "min_distance": float(dists.min()),
-                "last_distance": float(dists[-1]),
-            }
-
-        train_info = {
-            "num_solved": int(train_num_solved),
-            "sum_of_min_distances": float(train_sum_of_min_distances),
-            "sum_of_last_distances": float(train_sum_of_last_distances),
-            "squence_infos": train_sequence_infos,
-        }
-
-        return train_info
-
-    def _validate(
+    def _evaluate(
         self,
+        evaluation_timeout,
+        restart_timeout,
         network_config,
         agent_config,
         env_config,
-        tmp_dir,
-        restart_timeout,
-        stop_learning=True,
     ):
-        print("evaluating test performance")
+
         evaluation_arguments = [
             [
-                [validation_sequence],
-                self.validation_timeout,  # timeout
-                tmp_dir,  # restore_path
-                stop_learning,  # stop_learning
+                [train_sequence],
+                evaluation_timeout,  # timeout
+                None,  # restore_path
+                False,  # stop_learning
                 restart_timeout,  # restart_timeout
                 network_config,
                 agent_config,
                 env_config,
             ]
-            for validation_sequence in self.validation_sequences
+            for train_sequence in self.train_sequences
         ]
 
         with multiprocessing.Pool(self.num_cores) as pool:
@@ -206,7 +131,7 @@ class MetaLearnaWorker(Worker):
         # parameters for PPO here
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
-                "learning_rate", lower=1e-6, upper=1e-4, log=True, default_value=1e-5
+                "learning_rate", lower=1e-5, upper=1e-3, log=True, default_value=5e-4
             )
         )
         config_space.add_hyperparameter(
@@ -217,17 +142,19 @@ class MetaLearnaWorker(Worker):
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "entropy_regularization",
-                lower=5e-5,
-                upper=5e-3,
+                lower=1e-5,
+                upper=1e-2,
                 log=True,
                 default_value=1.5e-3,
             )
         )
+
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "reward_exponent", lower=1, upper=10, default_value=1
             )
         )
+
         config_space.add_hyperparameter(
             CS.UniformFloatHyperparameter(
                 "state_radius_relative", lower=0, upper=1, default_value=0
@@ -242,7 +169,7 @@ class MetaLearnaWorker(Worker):
         )
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "conv_channels1", lower=1, upper=32, log=False, default_value=16
+                "conv_channels1", lower=1, upper=32, log=True, default_value=32
             )
         )
 
@@ -253,13 +180,13 @@ class MetaLearnaWorker(Worker):
         )
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "conv_channels2", lower=1, upper=32, log=False, default_value=1
+                "conv_channels2", lower=1, upper=32, log=True, default_value=1
             )
         )
 
         config_space.add_hyperparameter(
             CS.UniformIntegerHyperparameter(
-                "num_fc_layers", lower=1, upper=2, default_value=1
+                "num_fc_layers", lower=1, upper=2, default_value=2
             )
         )
         config_space.add_hyperparameter(
@@ -306,7 +233,6 @@ class MetaLearnaWorker(Worker):
                 min_state_radius
                 + (max_state_radius - min_state_radius) * config["state_radius_relative"]
             )
-            del config["state_radius_relative"]
         else:
             min_state_radius = config["conv_size2"] + config["conv_size2"] - 1
             max_state_radius = 32
@@ -314,20 +240,8 @@ class MetaLearnaWorker(Worker):
                 min_state_radius
                 + (max_state_radius - min_state_radius) * config["state_radius_relative"]
             )
-            del config["state_radius_relative"]
+        del config["state_radius_relative"]
 
         config["restart_timeout"] = None
 
         return config
-
-
-def process_train_results(train_results):
-    results_by_sequence = {}
-    for r in train_results:
-        for s in r:
-            if not s.target_id in results_by_sequence:
-                results_by_sequence[s.target_id] = [s]
-            else:
-                results_by_sequence[s.target_id].append(s)
-
-    return results_by_sequence

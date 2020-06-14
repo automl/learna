@@ -7,21 +7,30 @@ import numpy as np
 import ConfigSpace as CS
 from hpbandster.core.worker import Worker
 
-from src.learna.agent import NetworkConfig, get_network, AgentConfig
-from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
-from src.learna.design_rna import design_rna
-from src.learna.learn_to_design_rna import learn_to_design_rna
+from learna.learna.agent import NetworkConfig, get_network, AgentConfig
+from learna.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
+from learna.learna.design_rna import design_rna
+from learna.learna.learn_to_design_rna import learn_to_design_rna
+from learna.data.parse_dot_brackets import parse_dot_brackets
 
 
-class L2DesignRNAWorker(Worker):
+class MetaLearnaWorker(Worker):
     def __init__(
         self, data_dir, num_cores, train_sequences, validation_timeout=60, **kwargs
     ):
         super().__init__(**kwargs)
-        self.data_dir = data_dir
         self.num_cores = num_cores
         self.validation_timeout = validation_timeout
-        self.train_sequences = train_sequences
+        self.train_sequences = parse_dot_brackets(
+            dataset="rfam_learn/train",
+            data_dir=data_dir,
+            target_structure_ids=train_sequences,
+        )
+        self.validation_sequences = parse_dot_brackets(
+            dataset="rfam_learn/validation",
+            data_dir=data_dir,
+            target_structure_ids=range(1, 101),
+        )
 
     def compute(self, config, budget, working_directory, config_id, **kwargs):
         """
@@ -45,7 +54,6 @@ class L2DesignRNAWorker(Worker):
             fc_units=config["fc_units"],
             num_lstm_layers=config["num_lstm_layers"],
             lstm_units=config["lstm_units"],
-            fc_activation=config["fc_activation"],
             embedding_size=config["embedding_size"],
         )
 
@@ -53,23 +61,23 @@ class L2DesignRNAWorker(Worker):
             learning_rate=config["learning_rate"],
             batch_size=config["batch_size"],
             entropy_regularization=config["entropy_regularization"],
-            likelihood_ratio_clipping=config["likelihood_ratio_clipping"],
         )
 
-        environment_config = RnaDesignEnvironmentConfig(
-            mutation_threshold=config["mutation_threshold"],
-            include_mutation=config["mutation_threshold"] > 1,
-            reward_exponent=config["reward_exponent"],
-            state_radius=config["state_radius"],
+        env_config = RnaDesignEnvironmentConfig(
+            reward_exponent=config["reward_exponent"], state_radius=config["state_radius"]
         )
 
         try:
 
             train_info = self._train(
-                network_config, agent_config, environment_config, tmp_dir, budget
+                network_config, agent_config, env_config, tmp_dir, budget
             )
             validation_info = self._validate(
-                network_config, agent_config, environment_config, tmp_dir
+                network_config,
+                agent_config,
+                env_config,
+                tmp_dir,
+                config["restart_timeout"],
             )
 
         except:
@@ -80,20 +88,18 @@ class L2DesignRNAWorker(Worker):
             "info": {"train_info": train_info, "validation_info": validation_info},
         }
 
-    def _train(self, network_config, agent_config, environment_config, tmp_dir, budget):
+    def _train(self, network_config, agent_config, env_config, tmp_dir, budget):
 
         # create arguments for all sequences
         train_arguments = [
-            "rfam_learn/train",
-            self.data_dir,
-            self.train_sequences,  # target_structure_ids
+            self.train_sequences,
             budget,  # timeout
             self.num_cores,  # worker_count
             tmp_dir,  # save_path
             None,  # restore_path
             network_config,
             agent_config,
-            environment_config,
+            env_config,
         ]
         # need to run tensoflow in a separate thread otherwise the pool in _evaluate
         # does not work
@@ -111,7 +117,7 @@ class L2DesignRNAWorker(Worker):
             sequence_id = r[0].target_id
             r.sort(key=lambda e: e.time)
 
-            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
 
             train_sum_of_min_distances += dists.min()
             train_sum_of_last_distances += dists[-1]
@@ -133,36 +139,28 @@ class L2DesignRNAWorker(Worker):
 
         return train_info
 
-    def _validate(self, *args, **kwargs):
-        return self._evaluate("rfam_learn/validation", range(1, 101), *args, **kwargs)
-
-    def _evaluate(
+    def _validate(
         self,
-        dataset,
-        evaluation_sequences,
         network_config,
         agent_config,
-        environment_config,
+        env_config,
         tmp_dir,
+        restart_timeout,
         stop_learning=True,
     ):
-
-        print("evaluating test performance on %s" % dataset)
+        print("evaluating test performance")
         evaluation_arguments = [
             [
-                dataset,
-                self.data_dir,
-                [i],  # target_structure_ids
-                None,  # target_structure_path
+                [validation_sequence],
                 self.validation_timeout,  # timeout
                 tmp_dir,  # restore_path
                 stop_learning,  # stop_learning
-                2 * self.validation_timeout,  # restart_timeout
+                restart_timeout,  # restart_timeout
                 network_config,
                 agent_config,
-                environment_config,
+                env_config,
             ]
-            for i in evaluation_sequences
+            for validation_sequence in self.validation_sequences
         ]
 
         with multiprocessing.Pool(self.num_cores) as pool:
@@ -178,7 +176,7 @@ class L2DesignRNAWorker(Worker):
             r.sort(key=lambda e: e.time)
 
             times = np.array(list(map(lambda e: e.time, r)))
-            dists = np.array(list(map(lambda e: e.fractional_hamming_distance, r)))
+            dists = np.array(list(map(lambda e: e.normalized_hamming_distance, r)))
 
             evaluation_sum_of_min_distances += dists.min()
             evaluation_sum_of_first_distances += dists[0]
@@ -291,8 +289,6 @@ class L2DesignRNAWorker(Worker):
 
     @staticmethod
     def _fill_config(config):
-        config["mutation_threshold"] = 5
-
         config["conv_size1"] = 1 + 2 * config["conv_radius1"]
         if config["conv_radius1"] == 0:
             config["conv_size1"] = 0
@@ -303,26 +299,30 @@ class L2DesignRNAWorker(Worker):
             config["conv_size2"] = 0
         del config["conv_radius2"]
 
-        min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
-        max_state_radius = 32
-        config["state_radius"] = int(
-            min_state_radius
-            + (max_state_radius - min_state_radius) * config["state_radius_relative"]
-        )
-        del config["state_radius_relative"]
+        if config["conv_size1"] != 0:
+            min_state_radius = config["conv_size1"] + config["conv_size1"] - 1
+            max_state_radius = 32
+            config["state_radius"] = int(
+                min_state_radius
+                + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+            )
+            del config["state_radius_relative"]
+        else:
+            min_state_radius = config["conv_size2"] + config["conv_size2"] - 1
+            max_state_radius = 32
+            config["state_radius"] = int(
+                min_state_radius
+                + (max_state_radius - min_state_radius) * config["state_radius_relative"]
+            )
+            del config["state_radius_relative"]
 
-        config["likelihood_ratio_clipping"] = 0.3
-        config["fc_activation"] = "relu"
-
-        config["optimization_steps"] = 1
+        config["restart_timeout"] = None
 
         return config
 
 
 def process_train_results(train_results):
-
     results_by_sequence = {}
-
     for r in train_results:
         for s in r:
             if not s.target_id in results_by_sequence:
