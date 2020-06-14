@@ -9,7 +9,7 @@ def _download_dataset_from_http(url, download_path):
             unit="B",
             unit_scale=True,
             unit_divisor=1024,
-            total=int(response.headers["Content-Length"]),
+            total=int(response.headers["X-ELS-SIZE"]),
         )
         for data in tqdm(response.iter_content()):
             progress_bar.update(len(data))
