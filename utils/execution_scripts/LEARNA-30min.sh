@@ -2,7 +2,7 @@
 TARGET_STRUCTURE_PATH=$1
 
 source thirdparty/miniconda/miniconda/bin/activate learna
-/usr/bin/time -f"%U" python -m src.learna.design_rna \
+/usr/bin/time -f"%U" python -m learna.learna.design_rna \
   --batch_size 79 \
   --conv_channels 10 3 \
   --embedding_size 0 \

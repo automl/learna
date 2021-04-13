@@ -10,9 +10,9 @@ import ConfigSpace as CS
 from hpbandster.core.worker import Worker
 
 
-from src.learna.agent import NetworkConfig, get_network, AgentConfig
-from src.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
-from src.learna.design_rna import design_rna
+from learna.learna.agent import NetworkConfig, get_network, AgentConfig
+from learna.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
+from learna.learna.design_rna import design_rna
 
 
 class DesignRNAWorker(Worker):

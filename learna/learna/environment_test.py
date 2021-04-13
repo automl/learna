@@ -1,5 +1,5 @@
 """
-    Testsuite for RNA-Design environment.
+Testsuite for RNA-Design environment.
 """
 
 import pytest
@@ -9,13 +9,8 @@ import numpy.testing as nt
 from distance import hamming
 from itertools import product
 
-from .environment import _string_difference_indices
-from .environment import RnaDesignEnvironmentConfig
-from .environment import _encode_dot_bracket
-from .environment import _encode_pairing
-from .environment import _Target
-from .environment import _Design
-from .environment import RnaDesignEnvironment
+from learna.learna.environment import _string_difference_indices, RnaDesignEnvironmentConfig, _encode_dot_bracket, \
+    _encode_pairing, _Target, _Design, RnaDesignEnvironment
 
 from RNA import fold
 

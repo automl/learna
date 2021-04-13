@@ -14,8 +14,8 @@ import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
 
 from hpbandster.optimizers import BOHB as BOHB
-from src.optimization.learna_worker import LearnaWorker
-from src.optimization.meta_learna_worker import MetaLearnaWorker
+from learna.optimization.learna_worker import LearnaWorker
+from learna.optimization.meta_learna_worker import MetaLearnaWorker
 
 
 parser = argparse.ArgumentParser(
@@ -66,7 +66,7 @@ parser.add_argument(
 parser.add_argument("--mode", choices=["learna", "meta_learna"], default="learna")
 
 
-# args=parser.parse_args("--run_id test --nic_name lo --shared_directory /tmp --n_cores 4 --data_dir src/data --mode L2DesignRNA".split())
+# args=parser.parse_args("--run_id test --nic_name lo --shared_directory /tmp --n_cores 4 --data_dir learna/data --mode L2DesignRNA".split())
 args = parser.parse_args()
 
 os.makedirs(args.shared_directory, exist_ok=True)

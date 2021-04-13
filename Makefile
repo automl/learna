@@ -82,6 +82,8 @@ data-rfam-learn:
 requirements:
 	./thirdparty/miniconda/make_miniconda.sh
 	conda env create -f environment.yml
+	@source activate learna && \
+	pip install .
 
 
 ################################################################################

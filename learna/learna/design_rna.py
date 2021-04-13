@@ -1,10 +1,10 @@
 import time
 
 import tensorflow as tf
-from ..tensorforce.runner import Runner
+from learna.tensorforce.runner import Runner
 
-from .agent import NetworkConfig, get_network, AgentConfig, get_agent_fn
-from .environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
+from learna.learna.agent import NetworkConfig, get_network, AgentConfig, get_agent_fn
+from learna.learna.environment import RnaDesignEnvironment, RnaDesignEnvironmentConfig
 
 
 def _get_episode_finished(timeout, stop_once_solved):
